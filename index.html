@@ -87,6 +87,26 @@
     // Expose to window for app.js
     window.APP_CONFIG = CONFIG;
   </script>
+  <script>
+// Show any fatal init error instead of a white screen
+window.addEventListener('error', function(e) {
+  const app = document.getElementById('app');
+  if(app && !app.innerHTML.trim()) {
+    app.innerHTML =
+      '<div style="padding:40px;font-family:system-ui,sans-serif;max-width:640px;margin:0 auto;">' +
+        '<h1 style="color:#dc2626;">⚠️ App failed to boot</h1>' +
+        '<pre style="background:#fef2f2;border:1px solid #fecaca;padding:16px;border-radius:8px;font-family:monospace;font-size:12px;overflow:auto;color:#991b1b;white-space:pre-wrap;">' +
+          (e.message || 'Unknown error') + '\n\n' + (e.filename || '') + ':' + (e.lineno || '') +
+        '</pre>' +
+        '<p style="color:#6b7280;font-size:13px;">Open DevTools (F12 → Console) for full details.</p>' +
+      '</div>';
+  }
+});
+
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('[MediStore] Unhandled promise rejection:', e.reason);
+});
+</script>
 
   <!-- App Logic -->
   <script src="app.js"></script>
