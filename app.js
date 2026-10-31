@@ -1548,7 +1548,7 @@ function renderLayout() {
           <button class="hamburger" id="btn-theme-mobile">${themeIcon}</button>
         </div>
 
-        <header class="topbar" style="display:flex; justify-content:space-between; align-items:center; height:64px;">
+                <header class="topbar" style="display:flex; justify-content:space-between; align-items:center; height:64px; padding-right: 24px;">
           <div style="display:flex; height:100%;">
             <a href="#/" class="topbar-tab ${hash === '#/' ? 'active' : ''}">Overview</a>
             <a href="#/invoices" class="topbar-tab ${hash.startsWith('#/invoices') ? 'active' : ''}">Invoices</a>
@@ -1557,19 +1557,21 @@ function renderLayout() {
             <a href="#/myshop" class="topbar-tab ${hash.startsWith('#/myshop') ? 'active' : ''}">Settings</a>
           </div>
 
-          <div style="display:flex; align-items:center; gap:20px;">
-            <div class="topbar-search" style="width:260px; position:relative;">
+          <div style="display:flex; align-items:center; gap:20px; flex-shrink: 0;">
+            <!-- Search Bar -->
+            <div class="topbar-search" style="width:240px; position:relative;">
               <input type="text" placeholder="Search anything..." id="topbar-search-input" style="width:100%; height:36px; padding:0 12px 0 36px; border-radius:20px; border:1px solid #E5E7EB; background:#F9FAFB; font-size:12px; outline:none;">
               <span style="position:absolute; left:12px; top:9px; opacity:0.5; font-size:14px;">🔍</span>
             </div>
             
+            <!-- Profile Section -->
             <div style="display:flex; align-items:center; gap:12px; border-left:1px solid #E5E7EB; padding-left:20px;">
-              <div class="topbar-avatar" style="width:32px;height:32px;font-size:12px; background:#F3F4F6; color:#111827;">
+              <div class="topbar-avatar" style="width:32px; height:32px; font-size:12px; background:#F3F4F6; color:#111827; flex-shrink: 0;">
                 ${esc((SETTINGS.owner_name || 'O').charAt(0).toUpperCase())}
               </div>
-              <div style="display:flex; flex-direction:column;">
-                <div style="font-size:12px; font-weight:600; color:#111827; line-height:1.2;">${esc(SETTINGS.owner_name || 'Owner')}</div>
-                <div style="font-size:10px; color:#6B7280; line-height:1.2;">Admin</div>
+              <div style="display:flex; flex-direction:column; white-space: nowrap;">
+                <div style="font-size:13px; font-weight:600; color:#111827; line-height:1.2;">${esc(SETTINGS.owner_name || 'Owner')}</div>
+                <div style="font-size:11px; color:#6B7280; line-height:1.2;">Admin</div>
               </div>
             </div>
           </div>
