@@ -11526,7 +11526,7 @@ window.addEventListener('beforeunload', () => {
 
 console.log('[MediStore] Core Logic Block 20 loaded · APP READY');
 /* ─────────────────────────────────────────────
-   DOMAIN & AI SCANNER MODALS
+   PREMIUM DOMAIN & AI SCANNER MODALS
    ───────────────────────────────────────────── */
 window.openDomainModal = function(suggestedDomain) {
   const supportPhone = window.APP_CONFIG.SUB_SUPPORT_WHATSAPP || '918637560557';
@@ -11538,13 +11538,27 @@ window.openDomainModal = function(suggestedDomain) {
 
   openModal(`
     <style>
+      /* Animations */
+      @keyframes bgShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
       @keyframes pulseGlow {
         0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-        70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        70% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
         100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
       }
-      .ai-banner {
-        background: linear-gradient(135deg, #064E3B 0%, #022C22 100%);
+      
+      /* AI Banner */
+      .premium-ai-banner {
+        background: linear-gradient(270deg, #064E3B, #0F766E, #064E3B);
+        background-size: 200% 200%;
+        animation: bgShift 3s ease infinite, pulseGlow 2s infinite;
         border: 1px solid #10B981;
         border-radius: var(--radius-lg);
         padding: 16px;
@@ -11553,108 +11567,176 @@ window.openDomainModal = function(suggestedDomain) {
         align-items: center;
         justify-content: space-between;
         cursor: pointer;
-        animation: pulseGlow 2s infinite;
-        transition: transform 0.2s;
+        transition: transform 0.2s ease;
+        position: relative;
+        overflow: hidden;
       }
-      .ai-banner:hover { transform: translateY(-2px); }
-      .domain-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
+      .premium-ai-banner:hover {
+        transform: scale(1.02);
       }
-      .domain-card {
+      .premium-ai-banner::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%; width: 50%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        animation: shimmer 2.5s infinite;
+      }
+      @keyframes shimmer {
+        100% { left: 200%; }
+      }
+
+      /* Domain Cards */
+      .premium-domain-card {
         border: 1px solid var(--border);
-        border-radius: var(--radius-md);
-        padding: 16px;
-        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        background: linear-gradient(135deg, #ffffff 0%, #F8F8FF 100%);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        opacity: 0; /* For animation */
+        animation: fadeUp 0.5s ease forwards;
+        overflow: hidden;
       }
+      .premium-domain-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px -8px rgba(91, 91, 214, 0.25);
+        border-color: rgba(91, 91, 214, 0.4);
+      }
+      
+      /* Popular Badge */
+      .popular-badge {
+        position: absolute;
+        top: 0; right: 0;
+        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        color: #fff;
+        font-size: 9px;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-bottom-left-radius: 8px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .domain-price {
+        font-size: 22px;
+        font-weight: 800;
+        color: #111827;
+        letter-spacing: -0.5px;
+      }
+      .domain-renewal {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+
+      /* Delays for staggered entrance */
+      .delay-1 { animation-delay: 0.1s; }
+      .delay-2 { animation-delay: 0.2s; }
+      .delay-3 { animation-delay: 0.3s; }
+      .delay-4 { animation-delay: 0.4s; }
     </style>
 
-    <div class="modal-header">
+    <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
       <div>
-        <div class="modal-title" style="font-size: 20px;">🌐 Domains</div>
-        <div class="text-xs text-muted" style="margin-top:2px;">Get your own professional address.</div>
+        <div class="modal-title" style="font-size: 22px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px;">
+          🌐 <span style="background: linear-gradient(90deg, #111827, #4B5563); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Domains</span>
+        </div>
+        <div class="text-sm text-muted" style="margin-top:4px;">Get your own professional address.</div>
       </div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     
-    <div class="modal-body">
+    <div class="modal-body" style="padding-top: 16px;">
       
       <!-- ANIMATED AI SCANNER BANNER -->
-      <div class="ai-banner" onclick="openAIScannerModal()">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div style="background:rgba(16, 185, 129, 0.2); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">
+      <div class="premium-ai-banner" onclick="openAIScannerModal()">
+        <div style="display:flex; align-items:center; gap:14px; position: relative; z-index: 2;">
+          <div style="background:rgba(255, 255, 255, 0.15); width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; backdrop-filter: blur(4px);">
             ✨
           </div>
           <div>
-            <div style="color:#34D399; font-weight:700; font-size:14px; display:flex; align-items:center; gap:6px;">
-              NEW: AI Invoice Scanner
-              <span style="background:#10B981; color:#fff; font-size:9px; padding:2px 6px; border-radius:4px; letter-spacing:0.5px;">AUTO-STOCK</span>
+            <div style="color:#fff; font-weight:800; font-size:15px; display:flex; align-items:center; gap:8px; letter-spacing: -0.3px;">
+              AI Invoice Scanner
+              <span style="background:#10B981; color:#022C22; font-size:9px; padding:3px 8px; border-radius:4px; letter-spacing:0.5px; font-weight:800;">AUTO-STOCK</span>
             </div>
-            <div style="color:#A7F3D0; font-size:12px; margin-top:2px;">Automatically scan bills and add stock.</div>
+            <div style="color:#A7F3D0; font-size:12px; margin-top:3px; font-weight:500;">Automatically scan bills and add stock.</div>
           </div>
         </div>
-        <div style="color:#34D399; font-size:18px;">→</div>
+        <div style="color:#34D399; font-size:20px; position: relative; z-index: 2;">→</div>
       </div>
 
       <!-- DOMAIN PLANS -->
-      <div class="domain-grid">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
         
-        <div class="domain-card">
+        <!-- .in Domain -->
+        <div class="premium-domain-card delay-1">
           <div>
-            <div style="font-weight:700; font-size:15px; color:var(--text-main);">.in Domain</div>
-            <div class="text-xs text-muted" style="margin-top:2px;">yourshop.in</div>
+            <div style="font-weight:800; font-size:16px; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+              🇮🇳 .in Domain
+            </div>
+            <div class="text-sm text-muted" style="margin-top:4px;">yourshop.in</div>
           </div>
-          <div style="margin-top:16px;">
-            <div style="color:#10B981; font-weight:700; font-size:14px;">₹1,299</div>
-            <div class="text-xs text-muted">+ ₹999/yr</div>
-            <a href="${makeWaLink('.in Domain', '₹1,299 + ₹999/yr')}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm" style="margin-top:12px; width:100%; justify-content:space-between;">
-              Claim <span>→</span>
+          <div style="margin-top:20px;">
+            <div class="domain-price">₹1,299</div>
+            <div class="domain-renewal">+ ₹999/yr renewal</div>
+            <a href="${makeWaLink('.in Domain', '₹1,299 + ₹999/yr')}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="margin-top:16px; width:100%; justify-content:space-between; padding: 0 16px; height: 38px; background: var(--primary); border: none; box-shadow: 0 4px 10px rgba(91, 91, 214, 0.2);">
+              Claim Now <span>→</span>
             </a>
           </div>
         </div>
 
-        <div class="domain-card">
+        <!-- .com Domain -->
+        <div class="premium-domain-card delay-2">
+          <div class="popular-badge">Most Popular</div>
           <div>
-            <div style="font-weight:700; font-size:15px; color:var(--text-main);">.com Domain</div>
-            <div class="text-xs text-muted" style="margin-top:2px;">yourshop.com</div>
+            <div style="font-weight:800; font-size:16px; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+              🌐 .com Domain
+            </div>
+            <div class="text-sm text-muted" style="margin-top:4px;">yourshop.com</div>
           </div>
-          <div style="margin-top:16px;">
-            <div style="color:#10B981; font-weight:700; font-size:14px;">₹1,799</div>
-            <div class="text-xs text-muted">+ ₹1,599/yr</div>
-            <a href="${makeWaLink('.com Domain', '₹1,799 + ₹1,599/yr')}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm" style="margin-top:12px; width:100%; justify-content:space-between;">
-              Claim <span>→</span>
+          <div style="margin-top:20px;">
+            <div class="domain-price">₹1,799</div>
+            <div class="domain-renewal">+ ₹1,599/yr renewal</div>
+            <a href="${makeWaLink('.com Domain', '₹1,799 + ₹1,599/yr')}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="margin-top:16px; width:100%; justify-content:space-between; padding: 0 16px; height: 38px; background: var(--primary); border: none; box-shadow: 0 4px 10px rgba(91, 91, 214, 0.2);">
+              Claim Now <span>→</span>
             </a>
           </div>
         </div>
 
-        <div class="domain-card">
+        <!-- Subdomain -->
+        <div class="premium-domain-card delay-3">
           <div>
-            <div style="font-weight:700; font-size:15px; color:var(--text-main);">Subdomain</div>
-            <div class="text-xs text-muted" style="margin-top:2px;">yourshop.shopsteward.in</div>
+            <div style="font-weight:800; font-size:16px; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+              ⚡ Subdomain
+            </div>
+            <div class="text-sm text-muted" style="margin-top:4px;">yourshop.shopsteward.in</div>
           </div>
-          <div style="margin-top:16px;">
-            <div style="color:#10B981; font-weight:700; font-size:14px;">₹699</div>
-            <div class="text-xs text-muted">+ ₹299/yr</div>
-            <a href="${makeWaLink('Subdomain', '₹699 + ₹299/yr')}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm" style="margin-top:12px; width:100%; justify-content:space-between;">
-              Claim <span>→</span>
+          <div style="margin-top:20px;">
+            <div class="domain-price">₹699</div>
+            <div class="domain-renewal">+ ₹299/yr renewal</div>
+            <a href="${makeWaLink('Subdomain', '₹699 + ₹299/yr')}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm" style="margin-top:16px; width:100%; justify-content:space-between; padding: 0 16px; height: 38px; background: transparent; border-color: var(--border);">
+              Claim Now <span>→</span>
             </a>
           </div>
         </div>
 
-        <div class="domain-card">
+        <!-- Custom TLD -->
+        <div class="premium-domain-card delay-4">
           <div>
-            <div style="font-weight:700; font-size:15px; color:var(--text-main);">Custom TLD</div>
-            <div class="text-xs text-muted" style="margin-top:2px;">Any extension</div>
+            <div style="font-weight:800; font-size:16px; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+              🚀 Custom TLD
+            </div>
+            <div class="text-sm text-muted" style="margin-top:4px;">Any extension (e.g., .store)</div>
           </div>
-          <div style="margin-top:16px;">
-            <div style="color:#10B981; font-weight:700; font-size:14px;">Variable</div>
-            <div class="text-xs text-muted">&nbsp;</div>
-            <a href="${makeWaLink('Custom TLD', 'Variable (Need Quote)')}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm" style="margin-top:12px; width:100%; justify-content:space-between;">
-              Ask <span>→</span>
+          <div style="margin-top:20px;">
+            <div class="domain-price" style="color: var(--text-muted);">Variable</div>
+            <div class="domain-renewal">Based on extension</div>
+            <a href="${makeWaLink('Custom TLD', 'Variable (Need Quote)')}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm" style="margin-top:16px; width:100%; justify-content:space-between; padding: 0 16px; height: 38px; background: transparent; border-color: var(--border);">
+              Ask for Quote <span>→</span>
             </a>
           </div>
         </div>
@@ -11662,7 +11744,7 @@ window.openDomainModal = function(suggestedDomain) {
       </div>
     </div>
     
-    <div class="modal-footer">
+    <div class="modal-footer" style="border-top: none; padding-top: 0;">
       <button class="btn btn-ghost" onclick="closeModal()">Close</button>
     </div>
   `);
@@ -11677,71 +11759,99 @@ window.openAIScannerModal = function() {
   const waLink = `https://wa.me/${supportPhone}?text=${waText}`;
 
   openModal(`
-    <div class="modal-header" style="background:#0B1311; border-bottom: 1px solid #1F2937;">
-      <div>
-        <div class="modal-title" style="color:#fff; display:flex; align-items:center; gap:8px;">
-          <span style="background:#10B981; color:#000; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:800; letter-spacing:0.5px;">AI INVOICE SCANNER</span>
+    <style>
+      @keyframes floatBg {
+        0% { background-position: 0% 0%; }
+        50% { background-position: 100% 100%; }
+        100% { background-position: 0% 0%; }
+      }
+      .premium-ai-modal {
+        background: linear-gradient(135deg, #0B1311 0%, #111C18 50%, #0B1311 100%);
+        background-size: 200% 200%;
+        animation: floatBg 10s ease infinite;
+        border-radius: var(--radius-lg);
+      }
+      .ai-modal-btn {
+        background: linear-gradient(90deg, #065F46, #059669);
+        border: 1px solid #10B981;
+        color: #fff;
+        font-weight: 700;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      }
+      .ai-modal-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+      }
+    </style>
+
+    <div class="premium-ai-modal">
+      <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.05); background: transparent;">
+        <div>
+          <div class="modal-title" style="color:#fff; display:flex; align-items:center; gap:8px;">
+            <span style="background:#10B981; color:#000; padding:3px 10px; border-radius:6px; font-size:10px; font-weight:800; letter-spacing:1px; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);">AI INVOICE SCANNER</span>
+          </div>
         </div>
+        <button class="modal-close" onclick="closeModal()" style="color:#9CA3AF;">✕</button>
       </div>
-      <button class="modal-close" onclick="closeModal()" style="color:#9CA3AF;">✕</button>
-    </div>
-    
-    <div class="modal-body" style="background:#0B1311; padding:0;">
-      <div style="display:flex; flex-direction:column;">
-        
-        <div style="padding:24px; border-bottom:1px solid #1F2937;">
-          <h3 style="color:#fff; font-size:16px; font-weight:700; margin-bottom:16px;">What it extracts:</h3>
-          <ul style="list-style:none; padding:0; margin:0; color:#D1D5DB; font-size:13px; display:flex; flex-direction:column; gap:10px;">
-            <li><b>Supplier Details:</b> Company name, address, GSTIN.</li>
-            <li><b>Invoice Info:</b> Invoice number, date, and totals.</li>
-            <li><b>Product Data:</b> Item names, quantities, units, and purchase rates.</li>
-            <li><b>Tax Breakdown:</b> Tax amounts and line-item totals.</li>
-          </ul>
+      
+      <div class="modal-body" style="padding:0;">
+        <div style="display:flex; flex-direction:column;">
+          
+          <div style="padding:32px 24px;">
+            <h3 style="color:#fff; font-size:18px; font-weight:800; margin-bottom:20px; letter-spacing: -0.5px;">What it extracts:</h3>
+            <ul style="list-style:none; padding:0; margin:0; color:#D1D5DB; font-size:13.5px; display:flex; flex-direction:column; gap:14px;">
+              <li style="display:flex; gap:10px; align-items:flex-start;"><span style="color:#10B981; font-size:16px;">✓</span> <div><b>Supplier Details:</b> Company name, address, GSTIN.</div></li>
+              <li style="display:flex; gap:10px; align-items:flex-start;"><span style="color:#10B981; font-size:16px;">✓</span> <div><b>Invoice Info:</b> Invoice number, date, and totals.</div></li>
+              <li style="display:flex; gap:10px; align-items:flex-start;"><span style="color:#10B981; font-size:16px;">✓</span> <div><b>Product Data:</b> Item names, quantities, units, and purchase rates.</div></li>
+              <li style="display:flex; gap:10px; align-items:flex-start;"><span style="color:#10B981; font-size:16px;">✓</span> <div><b>Tax Breakdown:</b> Tax amounts and line-item totals.</div></li>
+            </ul>
+          </div>
+
+          <div style="padding:32px 24px; background:rgba(0,0,0,0.2); border-top:1px solid rgba(255,255,255,0.05); border-bottom:1px solid rgba(255,255,255,0.05);">
+            <div style="display:inline-block; background:rgba(16, 185, 129, 0.15); color:#34D399; font-size:10px; font-weight:800; padding:5px 12px; border-radius:999px; margin-bottom:16px; letter-spacing:0.5px; border: 1px solid rgba(16, 185, 129, 0.3);">ANNUAL PLAN</div>
+            
+            <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:4px;">
+              <span style="font-size:42px; font-weight:800; color:#fff; letter-spacing: -1.5px;">₹7,999</span>
+              <span style="color:#9CA3AF; font-size:16px; font-weight:500;">/year</span>
+            </div>
+            
+            <div style="color:#9CA3AF; font-size:13px; margin-bottom:20px;">+ applicable GST</div>
+            
+            <div style="border:1px dashed rgba(16, 185, 129, 0.4); background:rgba(16, 185, 129, 0.1); color:#34D399; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:24px; display:inline-block;">
+              That's just <b>₹22 / day</b> to automate your invoices.
+            </div>
+            
+            <ul style="list-style:none; padding:0; margin:0 0 32px 0; color:#D1D5DB; font-size:13.5px; display:flex; flex-direction:column; gap:12px;">
+              <li style="display:flex; gap:10px; align-items:center;"><span style="color:#34D399; font-size:18px;">+</span> Up to 100 invoice scans per month</li>
+              <li style="display:flex; gap:10px; align-items:center;"><span style="color:#34D399; font-size:18px;">+</span> Unused scans do not carry forward</li>
+            </ul>
+
+            <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="btn ai-modal-btn" style="width:100%; justify-content:center; height: 48px; font-size: 14px; border-radius: 8px;">
+              GET A QUOTE →
+            </a>
+          </div>
+
         </div>
-
-        <div style="padding:24px; background:#111C18;">
-          <div style="display:inline-block; background:#1F2937; color:#34D399; font-size:10px; font-weight:700; padding:4px 10px; border-radius:999px; margin-bottom:12px;">ANNUAL PLAN</div>
-          
-          <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:4px;">
-            <span style="font-size:32px; font-weight:800; color:#fff;">₹7,999</span>
-            <span style="color:#9CA3AF; font-size:14px;">/year</span>
+        
+        <div style="padding:20px 24px; background:#0B1311;">
+          <div style="display:flex; gap:14px; align-items:flex-start;">
+            <span style="color:#F59E0B; font-size:18px;">⚠</span>
+            <div>
+              <div style="color:#F59E0B; font-weight:800; font-size:11px; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.5px;">Invoice Eligibility Note:</div>
+              <div style="color:#9CA3AF; font-size:12px; line-height:1.6;">
+                AI Invoice Scanner works best with clear, readable images of printed supplier invoices. Handwritten, blurry, damaged, incomplete, or unusually formatted invoices may not be processed accurately and may require manual entry or correction.
+              </div>
+            </div>
           </div>
-          
-          <div style="color:#9CA3AF; font-size:12px; margin-bottom:16px;">+ applicable GST</div>
-          
-          <div style="border:1px dashed #065F46; color:#34D399; padding:8px 12px; border-radius:6px; font-size:12px; margin-bottom:20px; display:inline-block;">
-            That's just <b>₹22 / day</b> to automate your invoices.
-          </div>
-          
-          <ul style="list-style:none; padding:0; margin:0 0 24px 0; color:#D1D5DB; font-size:13px; display:flex; flex-direction:column; gap:8px;">
-            <li style="display:flex; gap:8px;"><span style="color:#34D399;">+</span> Up to 100 invoice scans per month</li>
-            <li style="display:flex; gap:8px;"><span style="color:#34D399;">+</span> Unused scans do not carry forward</li>
-          </ul>
-
-          <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="btn" style="width:100%; justify-content:center; background:#065F46; color:#fff; border:none; font-weight:600;">
-            GET A QUOTE →
-          </a>
         </div>
 
       </div>
       
-      <div style="padding:16px 24px; background:#0B1311; border-top:1px solid #1F2937;">
-        <div style="display:flex; gap:12px; align-items:flex-start;">
-          <span style="color:#F59E0B; font-size:16px;">⚠</span>
-          <div>
-            <div style="color:#F59E0B; font-weight:700; font-size:11px; text-transform:uppercase; margin-bottom:4px;">Invoice Eligibility Note:</div>
-            <div style="color:#9CA3AF; font-size:11px; line-height:1.5;">
-              AI Invoice Scanner works best with clear, readable images of printed supplier invoices. Handwritten, blurry, damaged, incomplete, or unusually formatted invoices may not be processed accurately and may require manual entry or correction.
-            </div>
-          </div>
-        </div>
+      <div class="modal-footer" style="background:#0B1311; border-top:1px solid rgba(255,255,255,0.05);">
+        <button class="btn btn-ghost" onclick="openDomainModal('${SETTINGS.shop_name ? SETTINGS.shop_name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'myshop'}.com')" style="color:#9CA3AF; border-color:rgba(255,255,255,0.1);">← Back to Domains</button>
+        <button class="btn btn-ghost" onclick="closeModal()" style="color:#9CA3AF; border-color:rgba(255,255,255,0.1);">Close</button>
       </div>
-
-    </div>
-    
-    <div class="modal-footer" style="background:#0B1311; border-top:1px solid #1F2937;">
-      <button class="btn btn-ghost" onclick="openDomainModal('${SETTINGS.shop_name ? SETTINGS.shop_name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'myshop'}.com')" style="color:#9CA3AF; border-color:#374151;">← Back to Domains</button>
-      <button class="btn btn-ghost" onclick="closeModal()" style="color:#9CA3AF; border-color:#374151;">Close</button>
     </div>
   `);
 };
