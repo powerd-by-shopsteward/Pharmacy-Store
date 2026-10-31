@@ -1605,67 +1605,6 @@ function renderLayout() {
   $('#btn-logout').onclick = () => { if(confirm('Sign out?')) logout(); };
 }
 
-  // Close sidebar when nav link clicked
-  $$('.sidebar .nav-link').forEach(a => a.onclick = closeSidebar);
-
-  // Mobile Bottom Nav intercept "More"
-  $$('#mobile-nav a').forEach(a => {
-    if(a.dataset.mnav === '#__menu__') {
-      a.onclick = (e) => { 
-        e.preventDefault(); 
-        openSidebar(); 
-      };
-    }
-  });
-
-  // Theme Toggle
-  const toggleTheme = () => {
-    const html = document.documentElement;
-    const current = html.getAttribute('data-theme') || 'light';
-    const next = current === 'dark' ? 'light' : 'dark';
-    
-    html.setAttribute('data-theme', next);
-    localStorage.setItem('theme', next);
-    
-    // Update icons
-    const icon = next === 'dark' ? '☀️' : '🌙';
-    if($('#btn-theme')) $('#btn-theme').innerHTML = `<span>${icon}</span> Toggle Theme`;
-    if($('#btn-theme-mobile')) $('#btn-theme-mobile').textContent = icon;
-  };
-
-  $('#btn-theme').onclick = toggleTheme;
-  $('#btn-theme-mobile').onclick = toggleTheme;
-
-  // Logout
-  $('#btn-logout').onclick = () => {
-    if(confirm('Sign out of MediStore?')) logout();
-  };
-
-  // Global Search
-  const searchInput = $('#topbar-search-input');
-  if(searchInput) {
-    searchInput.addEventListener('keydown', (e) => {
-      if(e.key === 'Enter') {
-        const q = searchInput.value.trim().toLowerCase();
-        if(!q) return;
-        
-        // Try customer
-        const cust = DB.customers.find(c => (c.name || '').toLowerCase().includes(q) || (c.phone || '').includes(q));
-        if(cust) { location.hash = '#/customer/' + cust.id; searchInput.value = ''; return; }
-        
-        // Try product
-        const prod = DB.products.find(p => (p.name || '').toLowerCase().includes(q));
-        if(prod) { location.hash = '#/products'; searchInput.value = ''; return; }
-        
-        // Try invoice
-        const inv = DB.invoices.find(i => (i.invoice_no || '').toLowerCase().includes(q));
-        if(inv) { location.hash = '#/invoice/' + inv.id; searchInput.value = ''; return; }
-
-        toast('No match for "' + q + '"', 'info');
-      }
-    });
-  }
-}
 
 console.log('[MediStore] Core Logic Block 5 loaded');
 /* ─────────────────────────────────────────────
