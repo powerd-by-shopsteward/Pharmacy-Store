@@ -1546,7 +1546,7 @@ function renderLayout() {
             <div style="background: #fff; border: 1px solid #E5E7EB; border-radius: 6px; padding: 8px 12px; font-family: monospace; font-size: 13px; font-weight: 600; color: #5B5BD6; text-align: center; margin-bottom: 12px; user-select: all;">
               ${esc(domainName)}
             </div>
-            <button class="upgrade-btn" onclick="toast('Contact support to link your domain!', 'info')" style="padding: 10px;">Claim Domain</button>
+            <button class="upgrade-btn" onclick="openDomainModal('${domainName}')" style="padding: 10px;">Claim Domain</button>
           </div>
           
           <div style="display:flex; justify-content:space-between; align-items:center; padding:0 4px;">
@@ -11525,3 +11525,223 @@ window.addEventListener('beforeunload', () => {
 });
 
 console.log('[MediStore] Core Logic Block 20 loaded · APP READY');
+/* ─────────────────────────────────────────────
+   DOMAIN & AI SCANNER MODALS
+   ───────────────────────────────────────────── */
+window.openDomainModal = function(suggestedDomain) {
+  const supportPhone = window.APP_CONFIG.SUB_SUPPORT_WHATSAPP || '918637560557';
+  
+  const makeWaLink = (planName, price) => {
+    const msg = `Hi, I want to claim a domain for my shop (${SETTINGS.shop_name || 'MediStore'}).\n\nPlan: ${planName}\nDomain: ${suggestedDomain}\nPrice: ${price}\n\nPlease guide me on how to proceed.`;
+    return `https://wa.me/${supportPhone}?text=${encodeURIComponent(msg)}`;
+  };
+
+  openModal(`
+    <style>
+      @keyframes pulseGlow {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+      }
+      .ai-banner {
+        background: linear-gradient(135deg, #064E3B 0%, #022C22 100%);
+        border: 1px solid #10B981;
+        border-radius: var(--radius-lg);
+        padding: 16px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        animation: pulseGlow 2s infinite;
+        transition: transform 0.2s;
+      }
+      .ai-banner:hover { transform: translateY(-2px); }
+      .domain-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .domain-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        background: var(--bg-card);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+    </style>
+
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" style="font-size: 20px;">🌐 Domains</div>
+        <div class="text-xs text-muted" style="margin-top:2px;">Get your own professional address.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      
+      <!-- ANIMATED AI SCANNER BANNER -->
+      <div class="ai-banner" onclick="openAIScannerModal()">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="background:rgba(16, 185, 129, 0.2); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">
+            ✨
+          </div>
+          <div>
+            <div style="color:#34D399; font-weight:700; font-size:14px; display:flex; align-items:center; gap:6px;">
+              NEW: AI Invoice Scanner
+              <span style="background:#10B981; color:#fff; font-size:9px; padding:2px 6px; border-radius:4px; letter-spacing:0.5px;">AUTO-STOCK</span>
+            </div>
+            <div style="color:#A7F3D0; font-size:12px; margin-top:2px;">Automatically scan bills and add stock.</div>
+          </div>
+        </div>
+        <div style="color:#34D399; font-size:18px;">→</div>
+      </div>
+
+      <!-- DOMAIN PLANS -->
+      <div class="domain-grid">
+        
+        <div class="domain-card">
+          <div>
+            <div style="font-weight:700; font-size:15px; color:var(--text-main);">.in Domain</div>
+            <div class="text-xs text-muted" style="margin-top:2px;">yourshop.in</div>
+          </div>
+          <div style="margin-top:16px;">
+            <div style="color:#10B981; font-weight:700; font-size:14px;">₹1,299</div>
+            <div class="text-xs text-muted">+ ₹999/yr</div>
+            <a href="${makeWaLink('.in Domain', '₹1,299 + ₹999/yr')}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm" style="margin-top:12px; width:100%; justify-content:space-between;">
+              Claim <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="domain-card">
+          <div>
+            <div style="font-weight:700; font-size:15px; color:var(--text-main);">.com Domain</div>
+            <div class="text-xs text-muted" style="margin-top:2px;">yourshop.com</div>
+          </div>
+          <div style="margin-top:16px;">
+            <div style="color:#10B981; font-weight:700; font-size:14px;">₹1,799</div>
+            <div class="text-xs text-muted">+ ₹1,599/yr</div>
+            <a href="${makeWaLink('.com Domain', '₹1,799 + ₹1,599/yr')}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm" style="margin-top:12px; width:100%; justify-content:space-between;">
+              Claim <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="domain-card">
+          <div>
+            <div style="font-weight:700; font-size:15px; color:var(--text-main);">Subdomain</div>
+            <div class="text-xs text-muted" style="margin-top:2px;">yourshop.shopsteward.in</div>
+          </div>
+          <div style="margin-top:16px;">
+            <div style="color:#10B981; font-weight:700; font-size:14px;">₹699</div>
+            <div class="text-xs text-muted">+ ₹299/yr</div>
+            <a href="${makeWaLink('Subdomain', '₹699 + ₹299/yr')}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm" style="margin-top:12px; width:100%; justify-content:space-between;">
+              Claim <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="domain-card">
+          <div>
+            <div style="font-weight:700; font-size:15px; color:var(--text-main);">Custom TLD</div>
+            <div class="text-xs text-muted" style="margin-top:2px;">Any extension</div>
+          </div>
+          <div style="margin-top:16px;">
+            <div style="color:#10B981; font-weight:700; font-size:14px;">Variable</div>
+            <div class="text-xs text-muted">&nbsp;</div>
+            <a href="${makeWaLink('Custom TLD', 'Variable (Need Quote)')}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm" style="margin-top:12px; width:100%; justify-content:space-between;">
+              Ask <span>→</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+    </div>
+  `);
+};
+
+window.openAIScannerModal = function() {
+  const supportPhone = window.APP_CONFIG.SUB_SUPPORT_WHATSAPP || '918637560557';
+  
+  const waText = encodeURIComponent(
+    `Hi, I want a quote for the AI Invoice Scanner.\n\nShop: ${SETTINGS.shop_name || 'MediStore'}\nPlan: Annual Plan (₹7,999)\n\nPlease guide me on how to activate this.`
+  );
+  const waLink = `https://wa.me/${supportPhone}?text=${waText}`;
+
+  openModal(`
+    <div class="modal-header" style="background:#0B1311; border-bottom: 1px solid #1F2937;">
+      <div>
+        <div class="modal-title" style="color:#fff; display:flex; align-items:center; gap:8px;">
+          <span style="background:#10B981; color:#000; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:800; letter-spacing:0.5px;">AI INVOICE SCANNER</span>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal()" style="color:#9CA3AF;">✕</button>
+    </div>
+    
+    <div class="modal-body" style="background:#0B1311; padding:0;">
+      <div style="display:flex; flex-direction:column;">
+        
+        <div style="padding:24px; border-bottom:1px solid #1F2937;">
+          <h3 style="color:#fff; font-size:16px; font-weight:700; margin-bottom:16px;">What it extracts:</h3>
+          <ul style="list-style:none; padding:0; margin:0; color:#D1D5DB; font-size:13px; display:flex; flex-direction:column; gap:10px;">
+            <li><b>Supplier Details:</b> Company name, address, GSTIN.</li>
+            <li><b>Invoice Info:</b> Invoice number, date, and totals.</li>
+            <li><b>Product Data:</b> Item names, quantities, units, and purchase rates.</li>
+            <li><b>Tax Breakdown:</b> Tax amounts and line-item totals.</li>
+          </ul>
+        </div>
+
+        <div style="padding:24px; background:#111C18;">
+          <div style="display:inline-block; background:#1F2937; color:#34D399; font-size:10px; font-weight:700; padding:4px 10px; border-radius:999px; margin-bottom:12px;">ANNUAL PLAN</div>
+          
+          <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:4px;">
+            <span style="font-size:32px; font-weight:800; color:#fff;">₹7,999</span>
+            <span style="color:#9CA3AF; font-size:14px;">/year</span>
+          </div>
+          
+          <div style="color:#9CA3AF; font-size:12px; margin-bottom:16px;">+ applicable GST</div>
+          
+          <div style="border:1px dashed #065F46; color:#34D399; padding:8px 12px; border-radius:6px; font-size:12px; margin-bottom:20px; display:inline-block;">
+            That's just <b>₹22 / day</b> to automate your invoices.
+          </div>
+          
+          <ul style="list-style:none; padding:0; margin:0 0 24px 0; color:#D1D5DB; font-size:13px; display:flex; flex-direction:column; gap:8px;">
+            <li style="display:flex; gap:8px;"><span style="color:#34D399;">+</span> Up to 100 invoice scans per month</li>
+            <li style="display:flex; gap:8px;"><span style="color:#34D399;">+</span> Unused scans do not carry forward</li>
+          </ul>
+
+          <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="btn" style="width:100%; justify-content:center; background:#065F46; color:#fff; border:none; font-weight:600;">
+            GET A QUOTE →
+          </a>
+        </div>
+
+      </div>
+      
+      <div style="padding:16px 24px; background:#0B1311; border-top:1px solid #1F2937;">
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <span style="color:#F59E0B; font-size:16px;">⚠</span>
+          <div>
+            <div style="color:#F59E0B; font-weight:700; font-size:11px; text-transform:uppercase; margin-bottom:4px;">Invoice Eligibility Note:</div>
+            <div style="color:#9CA3AF; font-size:11px; line-height:1.5;">
+              AI Invoice Scanner works best with clear, readable images of printed supplier invoices. Handwritten, blurry, damaged, incomplete, or unusually formatted invoices may not be processed accurately and may require manual entry or correction.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    
+    <div class="modal-footer" style="background:#0B1311; border-top:1px solid #1F2937;">
+      <button class="btn btn-ghost" onclick="openDomainModal('${SETTINGS.shop_name ? SETTINGS.shop_name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'myshop'}.com')" style="color:#9CA3AF; border-color:#374151;">← Back to Domains</button>
+      <button class="btn btn-ghost" onclick="closeModal()" style="color:#9CA3AF; border-color:#374151;">Close</button>
+    </div>
+  `);
+};
