@@ -240,6 +240,28 @@ console.log('[MediStore] Block 1 loaded · Supabase:', sb ? 'OK' : 'NOT INITIALI
 /* ─────────────────────────────────────────────
    11. SYNC DB (Fetch all tables)
    ───────────────────────────────────────────── */
+async function fetchAllInvoiceItems() {
+  const PAGE = 1000;
+  const out  = [];
+  let from = 0;
+  
+  for(let safety = 0; safety < 200; safety++) {
+    const { data, error } = await sb.from('invoice_items')
+      .select('*')
+      .range(from, from + PAGE - 1);
+      
+    if(error) { 
+      console.error('[fetchAllInvoiceItems]', error); 
+      throw new Error(error.message || 'Database error'); 
+    }
+    if(!data || !data.length) break;
+    
+    out.push(...data);
+    if(data.length < PAGE) break;
+    from += data.length;
+  }
+  return out;
+}
 async function syncDB() {
   window.DB_SYNCING = true;
 
@@ -340,9 +362,14 @@ async function syncDB() {
   window.DB_SYNC_ERRORS = errors;
   window.DB_SYNCING     = false;
 
-  if(errors.length) {
-    console.error('[syncDB] failed tables:', errors);
-    toast('Some data failed to load. Please check your connection.', 'error');
+    if(errors.length) {
+    console.error('🚨 SYNC ERROR:', errors);
+    if(!window.__hasShownSyncError) {
+      toast('Data sync failed: ' + (errors[0] || 'Unknown error'), 'error');
+      window.__hasShownSyncError = true;
+    }
+  } else {
+    window.__hasShownSyncError = false;
   }
 
   return { ok: errors.length === 0, errors };
