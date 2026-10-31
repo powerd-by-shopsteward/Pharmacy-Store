@@ -1762,28 +1762,33 @@ function renderDashboard(content) {
       </div>
     </div>
 
-    <!-- FILTER BAR -->
-    <div class="card" style="display:flex; gap:24px; padding:16px 24px; margin-bottom:20px; border-radius:12px; align-items:center; background:#FFF; border:1px solid #F0F0F5;">
-      <div style="flex:1; border-right:1px solid #E5E7EB; padding-right:20px;">
+       <!-- FILTER BAR -->
+    <div class="card" style="display:flex; gap:24px; padding:16px 24px; margin-bottom:20px; border-radius:12px; align-items:center; background:#FFF; border:1px solid #F0F0F5; flex-wrap:wrap;">
+      <div style="flex:1; min-width:140px; border-right:1px solid #E5E7EB; padding-right:20px;">
         <label style="font-size:11px; font-weight:600; color:#6B7280; margin-bottom:4px; display:block;">Customers</label>
-        <select class="input" style="border:none; background:transparent; padding:0; font-size:13px; font-weight:600; color:#111827; outline:none; height:auto; box-shadow:none; width:100%;">
-          <option>All customers</option>
+        <select id="dash-filter-cust" class="input" style="border:none; background:transparent; padding:0; font-size:13px; font-weight:600; color:#111827; outline:none; height:auto; box-shadow:none; width:100%; cursor:pointer;">
+          <option value="">All customers</option>
+          ${DB.customers.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}
         </select>
       </div>
-      <div style="flex:1; border-right:1px solid #E5E7EB; padding-right:20px;">
+      <div style="flex:1; min-width:140px; border-right:1px solid #E5E7EB; padding-right:20px;">
         <label style="font-size:11px; font-weight:600; color:#6B7280; margin-bottom:4px; display:block;">Payment Status</label>
-        <select class="input" style="border:none; background:transparent; padding:0; font-size:13px; font-weight:600; color:#111827; outline:none; height:auto; box-shadow:none; width:100%;">
-          <option>All statuses</option>
+        <select id="dash-filter-status" class="input" style="border:none; background:transparent; padding:0; font-size:13px; font-weight:600; color:#111827; outline:none; height:auto; box-shadow:none; width:100%; cursor:pointer;">
+          <option value="">All statuses</option>
+          <option value="paid">Paid</option>
+          <option value="pending">Pending (Due > 0)</option>
         </select>
       </div>
-      <div style="flex:1; border-right:1px solid #E5E7EB; padding-right:20px;">
+      <div style="flex:1; min-width:140px; border-right:1px solid #E5E7EB; padding-right:20px;">
         <label style="font-size:11px; font-weight:600; color:#6B7280; margin-bottom:4px; display:block;">Date Range</label>
-        <div style="font-size:13px; font-weight:600; color:#111827; display:flex; align-items:center; gap:6px;">
-          📅 Oct 1, 2025 - Oct 31, 2025
-        </div>
+        <select id="dash-filter-date" class="input" style="border:none; background:transparent; padding:0; font-size:13px; font-weight:600; color:#111827; outline:none; height:auto; box-shadow:none; width:100%; cursor:pointer;">
+          <option value="all">All Time</option>
+          <option value="today">Today</option>
+          <option value="month">This Month</option>
+        </select>
       </div>
-      <div style="flex:1.5; position:relative;">
-        <input type="text" placeholder="Search invoice, customer, or ID..." style="width:100%; border:none; background:transparent; font-size:13px; color:#111827; outline:none; padding-left:24px;">
+      <div style="flex:1.5; min-width:200px; position:relative;">
+        <input id="dash-filter-search" type="text" placeholder="Search invoice, customer, or ID..." style="width:100%; border:none; background:transparent; font-size:13px; color:#111827; outline:none; padding-left:24px;">
         <span style="position:absolute; left:0; top:2px; color:#9CA3AF; font-size:14px;">🔍</span>
       </div>
     </div>
@@ -1799,30 +1804,9 @@ function renderDashboard(content) {
       </div>
 
       <div class="panel-dark-body" id="dash-panel-body" style="grid-template-columns: 1.2fr 1.5fr 1fr; gap:20px;">
-        <!-- LEFT: List -->
+                <!-- LEFT: List -->
         <div class="panel-list" id="dash-list" style="background:transparent;">
-          ${recent.length === 0 
-            ? '<div style="color:#9CA3AF;font-size:13px;padding:20px 0;">No invoices yet.</div>' 
-            : recent.map(inv => {
-                const name = inv.customer_name || 'Walk-in';
-                const isSelected = selectedInv && selectedInv.id === inv.id;
-                return `
-                  <div class="panel-list-item ${isSelected ? 'active' : ''}" data-id="${inv.id}" style="border-radius:8px;">
-                    <div class="avatar" style="background:#312E81; color:#A5B4FC;">${esc(name.charAt(0).toUpperCase())}</div>
-                    <div class="info">
-                      <div class="name">${esc(name)}</div>
-                      <div class="sub">${esc(inv.invoice_no)} · ${fmtDate(txDate(inv, 'invoice_date'))}</div>
-                    </div>
-                    <div class="amount">
-                      ${rs(inv.total)}
-                      ${Number(inv.due) > 0 
-                        ? '<div class="chip chip-warning" style="font-size:9px;margin-top:4px;padding:2px 6px;border-radius:4px;">Pending</div>' 
-                        : '<div class="chip chip-success" style="font-size:9px;margin-top:4px;padding:2px 6px;border-radius:4px;">Paid</div>'}
-                    </div>
-                  </div>
-                `;
-            }).join('')
-          }
+           <!-- Dynamically injected via JS -->
         </div>
 
         <!-- CENTER & RIGHT: Details & Actions (Rendered by JS) -->
@@ -1967,16 +1951,100 @@ function renderDashboard(content) {
     `;
   };
 
-  renderDashDetail(selectedInv);
+    // ── DYNAMIC DASHBOARD FILTERING ──
+  const updateDashList = () => {
+    const custId = $('#dash-filter-cust').value;
+    const status = $('#dash-filter-status').value;
+    const dateRange = $('#dash-filter-date').value;
+    const search = $('#dash-filter-search').value.toLowerCase();
 
-  $$('#dash-list .panel-list-item').forEach(el => {
-    el.onclick = () => {
-      $$('#dash-list .panel-list-item').forEach(x => x.classList.remove('active'));
-      el.classList.add('active');
-      const inv = DB.invoices.find(i => i.id === el.dataset.id);
-      if(inv) renderDashDetail(inv);
-    };
+    const today = todayStr();
+    const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10);
+
+    const filtered = DB.invoices
+      .filter(i => !String(i.invoice_no || '').startsWith(RETURN_PREFIX))
+      .filter(i => {
+        // 1. Filter by Customer
+        if (custId && i.customer_id !== custId) return false;
+        
+        // 2. Filter by Status
+        if (status === 'paid' && Number(i.due) > 0) return false;
+        if (status === 'pending' && Number(i.due) <= 0) return false;
+        
+        // 3. Filter by Date
+        const d = txDate(i, 'invoice_date');
+        if (dateRange === 'today' && d !== today) return false;
+        if (dateRange === 'month' && d < firstOfMonth) return false;
+        
+        // 4. Filter by Search Text
+        if (search) {
+          const hay = ((i.invoice_no || '') + ' ' + (i.customer_name || '') + ' ' + (i.customer_phone || '')).toLowerCase();
+          if (!hay.includes(search)) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+      .slice(0, 8); // Show top 8
+
+    const listContainer = $('#dash-list');
+    if(!listContainer) return;
+
+    if (filtered.length === 0) {
+      listContainer.innerHTML = '<div style="color:#9CA3AF;font-size:13px;padding:20px 0;">No invoices match your filters.</div>';
+      renderDashDetail(null);
+      return;
+    }
+
+    // Render the HTML for the filtered list
+    listContainer.innerHTML = filtered.map(inv => {
+      const name = inv.customer_name || 'Walk-in';
+      return `
+        <div class="panel-list-item" data-id="${inv.id}" style="border-radius:8px;">
+          <div class="avatar" style="background:#312E81; color:#A5B4FC;">${esc(name.charAt(0).toUpperCase())}</div>
+          <div class="info">
+            <div class="name">${esc(name)}</div>
+            <div class="sub">${esc(inv.invoice_no)} · ${fmtDate(txDate(inv, 'invoice_date'))}</div>
+          </div>
+          <div class="amount">
+            ${rs(inv.total)}
+            ${Number(inv.due) > 0 
+              ? '<div class="chip chip-warning" style="font-size:9px;margin-top:4px;padding:2px 6px;border-radius:4px;">Pending</div>' 
+              : '<div class="chip chip-success" style="font-size:9px;margin-top:4px;padding:2px 6px;border-radius:4px;">Paid</div>'}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Bind click events to the new list items
+    $$('#dash-list .panel-list-item').forEach(el => {
+      el.onclick = () => {
+        $$('#dash-list .panel-list-item').forEach(x => x.classList.remove('active'));
+        el.classList.add('active');
+        const inv = DB.invoices.find(i => i.id === el.dataset.id);
+        if(inv) renderDashDetail(inv);
+      };
+    });
+
+    // Auto-select the first item
+    const firstEl = $('#dash-list .panel-list-item');
+    if (firstEl) {
+      firstEl.classList.add('active');
+      const firstInv = DB.invoices.find(i => i.id === firstEl.dataset.id);
+      renderDashDetail(firstInv);
+    }
+  };
+
+  // Attach event listeners to the filter inputs
+  ['#dash-filter-cust', '#dash-filter-status', '#dash-filter-date'].forEach(sel => {
+    const el = $(sel);
+    if(el) el.onchange = updateDashList;
   });
+  
+  const searchEl = $('#dash-filter-search');
+  if(searchEl) searchEl.oninput = updateDashList;
+
+  // Run once on load
+  updateDashList();
 
   // ── RENDER CHARTS ──
   charts.forEach(c => { try { c.destroy(); } catch(e){} });
