@@ -1763,7 +1763,7 @@ tbody tr:last-child td {
 
 .nav-link .icon {
   font-size: 16px;
-  filter: grayscale(100%) opacity(0.6);
+  opacity: 0.85;
 }
 
 .nav-link:hover {
