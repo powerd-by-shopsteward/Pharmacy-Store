@@ -1,14 +1,15 @@
 /* ══════════════════════════════════════════════════════════════════
    MEDISTORE — CORE LOGIC
    FILE: app.js
+   BLOCK 1 (FIXED): Constants, State, Helpers, Supabase (Safe Init)
    ══════════════════════════════════════════════════════════════════ */
 
 /* ─────────────────────────────────────────────
    1. CONSTANTS
    ───────────────────────────────────────────── */
 const PRODUCT_UNITS = [
-  'strip', 'tablet', 'capsule', 'bottle', 'tube', 'sachet', 'vial', 
-  'ampoule', 'syringe', 'injection', 'drops', 'syrup', 'box', 'pack', 
+  'strip', 'tablet', 'capsule', 'bottle', 'tube', 'sachet', 'vial',
+  'ampoule', 'syringe', 'injection', 'drops', 'syrup', 'box', 'pack',
   'piece', 'jar', 'tin', 'can', 'roll', 'packet'
 ];
 
@@ -30,16 +31,53 @@ const INVOICE_PREFIX = 'INV-';
 const RETURN_PREFIX  = 'RET-';
 
 /* ─────────────────────────────────────────────
-   2. SUPABASE INITIALIZATION
+   2. SAFE SUPABASE INITIALIZATION
    ───────────────────────────────────────────── */
-// Uses the config defined in index.html
-const sb = supabase.createClient(
-  window.APP_CONFIG.SUPABASE_URL, 
-  window.APP_CONFIG.SUPABASE_ANON_KEY
-);
+let sb = null;
+(function initSupabase() {
+  try {
+    const cfg = window.APP_CONFIG || {};
+    if(!cfg.SUPABASE_URL || cfg.SUPABASE_URL === 'YOUR_SUPABASE_URL' ||
+       !cfg.SUPABASE_ANON_KEY || cfg.SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+      throw new Error(
+        'Configuration incomplete.\n\n' +
+        'Open index.html and replace:\n' +
+        '  YOUR_SUPABASE_URL     → your project URL\n' +
+        '  YOUR_SUPABASE_ANON_KEY → your anon key\n\n' +
+        'Get both from https://app.supabase.com → Project Settings → API'
+      );
+    }
+    if(typeof supabase === 'undefined') {
+      throw new Error('Supabase library not loaded. Check your internet connection or CDN block.');
+    }
+    sb = supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+  } catch(e) {
+    console.error('[MediStore] Init failed:', e);
+    // Show a clear error card instead of white screen
+    document.addEventListener('DOMContentLoaded', () => {
+      const app = document.getElementById('app');
+      if(app) {
+        app.innerHTML =
+          '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,-apple-system,sans-serif;background:#F7F7FB;">' +
+            '<div style="max-width:560px;width:100%;background:#fff;border:1px solid #E9EAF0;border-radius:16px;padding:32px;box-shadow:0 10px 40px rgba(0,0,0,0.08);">' +
+              '<div style="font-size:40px;margin-bottom:16px;">⚠️</div>' +
+              '<h1 style="font-size:20px;font-weight:700;color:#111827;margin:0 0 12px;">Configuration Required</h1>' +
+              '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:16px;margin-bottom:20px;font-family:ui-monospace,monospace;font-size:12px;color:#991b1b;white-space:pre-wrap;line-height:1.6;">' +
+                String(e.message || e).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c])) +
+              '</div>' +
+              '<p style="font-size:13px;color:#6B7280;line-height:1.7;margin:0;">' +
+                'This is not a bug — the app needs your Supabase credentials before it can connect to a database.' +
+              '</p>' +
+            '</div>' +
+          '</div>';
+      }
+    });
+    throw e;
+  }
+})();
 
 /* ─────────────────────────────────────────────
-   3. GLOBAL STATE & DB CACHE
+   3. GLOBAL STATE
    ───────────────────────────────────────────── */
 let SESSION = null;
 let charts  = [];
@@ -57,28 +95,18 @@ let SETTINGS = {
   logo:              '',
   gst_enabled:       false,
   gst_number:        '',
-  gst_rate:          window.APP_CONFIG.DEFAULT_GST_RATE,
-  near_expiry_days:  window.APP_CONFIG.DEFAULT_NEAR_EXPIRY_DAYS,
+  gst_rate:          (window.APP_CONFIG && window.APP_CONFIG.DEFAULT_GST_RATE) || 12,
+  near_expiry_days:  (window.APP_CONFIG && window.APP_CONFIG.DEFAULT_NEAR_EXPIRY_DAYS) || 60,
   enable_non_batch:  false,
   print_footer:      'Thank you! Get well soon',
   loaded:            false
 };
 
 const DB = {
-  customers:               [],
-  doctors:                 [],
-  suppliers:               [],
-  products:                [],
-  product_batches:         [],
-  invoices:                [],
-  invoice_items:           [],
-  payments:                [],
-  supplier_invoices:       [],
-  supplier_invoice_items:  [],
-  supplier_payments:       [],
-  returns:                 [],
-  expenses:                [],
-  settings:                null
+  customers: [], doctors: [], suppliers: [], products: [], product_batches: [],
+  invoices: [], invoice_items: [], payments: [],
+  supplier_invoices: [], supplier_invoice_items: [], supplier_payments: [],
+  returns: [], expenses: [], settings: null
 };
 
 window.DB_SYNCED       = false;
@@ -92,63 +120,69 @@ const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
 /* ─────────────────────────────────────────────
-   5. SECURITY & SANITIZATION (XSS PREVENTION)
+   5. XSS ESCAPING
    ───────────────────────────────────────────── */
-/**
- * Escapes HTML entities in a string to prevent XSS.
- * MUST be used whenever inserting untrusted data (DB or User) into innerHTML.
- */
 function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', 
-    '<': '&lt;', 
-    '>': '&gt;', 
-    '"': '&quot;', 
-    "'": '&#39;'
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[c]));
 }
 
 /* ─────────────────────────────────────────────
-   6. DATE & TIME HELPERS
+   6. FAVICON (missing in original — now defined)
+   ───────────────────────────────────────────── */
+function applyFavicon() {
+  let link = document.querySelector('link[rel="icon"]');
+  if(!link) {
+    link = document.createElement('link');
+    link.rel = 'icon';
+    document.head.appendChild(link);
+  }
+  link.href = (SETTINGS && SETTINGS.logo) ||
+    "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>";
+}
+
+/* ─────────────────────────────────────────────
+   7. DATE / TIME HELPERS
    ───────────────────────────────────────────── */
 const todayStr = () => new Date().toISOString().slice(0, 10);
 const isFuture = d => d && d > todayStr();
 
 const fmtDate = (d) => {
-  if (!d) return '-';
+  if(!d) return '-';
   const s = String(d).slice(0, 10);
   const dt = new Date(s);
-  if (isNaN(dt.getTime())) return '-';
+  if(isNaN(dt.getTime())) return '-';
   return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
 const txDate = (r, k) => (r && (r[k] || (r.created_at ? r.created_at.slice(0, 10) : ''))) || '';
 
 const txDT = (r, k) => {
-  if (!r) return '-';
+  if(!r) return '-';
   const d = txDate(r, k);
-  if (!d) return '-';
+  if(!d) return '-';
   return fmtDate(d) + (r.tx_time ? ' ' + r.tx_time : '');
 };
 
 const enteredOn = (r) => {
-  if (!r || !r.created_at) return '';
+  if(!r || !r.created_at) return '';
   const d = new Date(r.created_at);
   return 'Entered: ' + d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
        + ' ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 };
 
 const fmtExpiryShort = (d) => {
-  if (!d) return '—';
+  if(!d) return '—';
   const dt = new Date(String(d).slice(0, 10));
-  if (isNaN(dt.getTime())) return '—';
+  if(isNaN(dt.getTime())) return '—';
   const mm = String(dt.getMonth() + 1).padStart(2, '0');
   const yy = String(dt.getFullYear()).slice(-2);
   return mm + '/' + yy;
 };
 
 /* ─────────────────────────────────────────────
-   7. NUMBER & CURRENCY FORMATTERS (Indian System)
+   8. NUMBER / CURRENCY
    ───────────────────────────────────────────── */
 function inr(n) {
   const num = Number(n || 0);
@@ -157,8 +191,7 @@ function inr(n) {
   const p   = s.split('.');
   let intPart = p[0];
   const decPart = p[1];
-  
-  if (intPart.length > 3) {
+  if(intPart.length > 3) {
     const last3 = intPart.slice(-3);
     const rest  = intPart.slice(0, -3);
     intPart = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + last3;
@@ -174,20 +207,15 @@ const fmtNum = (n) => {
 };
 
 /* ─────────────────────────────────────────────
-   8. UI: TOASTS
+   9. TOAST
    ───────────────────────────────────────────── */
 function toast(msg, type = 'info') {
   const root = $('#toast-root');
-  if (!root) return;
-
+  if(!root) return;
   const el = document.createElement('div');
   el.className = 'toast toast-' + type;
-  
-  // SAFE: Using textContent instead of innerHTML to prevent XSS from DB errors
-  el.textContent = msg; 
-  
+  el.textContent = msg;
   root.appendChild(el);
-  
   setTimeout(() => {
     el.style.opacity = '0';
     setTimeout(() => el.remove(), 300);
@@ -195,46 +223,20 @@ function toast(msg, type = 'info') {
 }
 
 /* ─────────────────────────────────────────────
-   9. SUBSCRIPTION HELPERS (From Config)
+   10. SUBSCRIPTION CONSTANTS
    ───────────────────────────────────────────── */
-const SUB_PLAN_AMOUNT = window.APP_CONFIG.SUB_PLAN_AMOUNT;
-const SUB_OWNER_UPI   = window.APP_CONFIG.SUB_OWNER_UPI;
-const SUB_OWNER_NAME  = window.APP_CONFIG.SUB_OWNER_NAME;
+const SUB_PLAN_AMOUNT  = (window.APP_CONFIG && window.APP_CONFIG.SUB_PLAN_AMOUNT)  || 599;
+const SUB_OWNER_UPI    = (window.APP_CONFIG && window.APP_CONFIG.SUB_OWNER_UPI)    || '';
+const SUB_OWNER_NAME   = (window.APP_CONFIG && window.APP_CONFIG.SUB_OWNER_NAME)   || '';
 
 window.SUB = {
   loaded: false,
-  active: true, // Default fail-open for local dev, will sync with DB
+  active: true,
   expires_at: null,
   last_paid_at: null
 };
 
-console.log('[MediStore] Core Logic Block 1 loaded');
-/* ─────────────────────────────────────────────
-   10. PAGINATED FETCH (Invoice Items)
-   ───────────────────────────────────────────── */
-async function fetchAllInvoiceItems() {
-  const PAGE = 1000;
-  const out  = [];
-  let from = 0;
-  
-  for(let safety = 0; safety < 200; safety++) { /* Hard cap ~200k rows */
-    const { data, error } = await sb.from('invoice_items')
-      .select('*')
-      .range(from, from + PAGE - 1);
-      
-    if(error) { 
-      console.error('[fetchAllInvoiceItems]', error); 
-      break; 
-    }
-    if(!data || !data.length) break;
-    
-    out.push(...data);
-    if(data.length < PAGE) break;
-    from += data.length;
-  }
-  return out;
-}
-
+console.log('[MediStore] Block 1 loaded · Supabase:', sb ? 'OK' : 'NOT INITIALIZED');
 /* ─────────────────────────────────────────────
    11. SYNC DB (Fetch all tables)
    ───────────────────────────────────────────── */
