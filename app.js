@@ -1518,9 +1518,12 @@ function renderLayout() {
   app.innerHTML = `
     <div class="layout">
       <aside class="sidebar" id="sidebar">
-        <div class="brand">
-          <div class="brand-logo" style="display:flex; align-items:center; gap:8px; font-size:20px;">
-            <span style="color:#5B5BD6;">⍟</span> ${esc(SETTINGS.shop_name || 'FlowFin')}
+               <div class="brand" style="padding: 24px 16px; border-bottom: none; gap: 12px; overflow: hidden; width: 100%;">
+          <div class="brand-logo" style="width: 32px; height: 32px; background: #5B5BD6; color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; font-weight: 700;">
+            ⍟
+          </div>
+          <div class="brand-text" style="font-size: 16px; font-weight: 700; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">
+            ${esc(SETTINGS.shop_name || 'FlowFin')}
           </div>
         </div>
         
