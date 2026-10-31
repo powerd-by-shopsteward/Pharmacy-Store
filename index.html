@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ══════════════════════════════════════════════════════════════════
+       MEDISTORE — FLOWFIN DESIGN (PC-FIRST + MOBILE PARITY)
+       FILE: index.html
+       ══════════════════════════════════════════════════════════════════ -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#5B5BD6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>MediStore — Pharmacy Manager</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>">
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       GOOGLE FONTS (Inter)
+       ══════════════════════════════════════════════════════════════════ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       PINNED CDN DEPENDENCIES
+       ══════════════════════════════════════════════════════════════════ -->
+  <!-- Supabase Client (Auth & DB) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/supabase-js.min.js"></script>
+  
+  <!-- Chart.js (Dashboard & Analytics) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  
+  <!-- jsPDF & AutoTable (A4 PDF Generation) -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  
+  <!-- QRCode.js (Local UPI QR generation) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+
+  <!-- Bluetooth Receipt Printer Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/@point-of-sale/receipt-printer-encoder@3.0.3/dist/receipt-printer-encoder.umd.min.js" async></script>
+  <script src="https://cdn.jsdelivr.net/npm/@point-of-sale/webbluetooth-receipt-printer@2.0.0/dist/webbluetooth-receipt-printer.umd.js" async></script>
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- ══════════════════════════════════════════════════════════════════
+       APP ROOTS
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="app"></div>
+  <div id="modal-root"></div>
+  <div id="toast-root"></div>
+  
+  <!-- Print Sandbox (Hidden, used for thermal prints) -->
+  <div id="print-root" style="display:none"></div>
+  <div id="print-area" style="display:none"></div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       CONFIGURATION — REPLACE BEFORE DEPLOY
+       ══════════════════════════════════════════════════════════════════ -->
+  <script>
+    /* 
+      ⚠️ SECURITY NOTE:
+      The Supabase URL and Anon Key are safe to expose in the client ONLY IF
+      Row Level Security (RLS) is strictly enforced on all database tables.
+      Do not rely on this client-side code for security. 
+    */
+    const CONFIG = {
+      SUPABASE_URL: 'YOUR_SUPABASE_URL',
+      SUPABASE_ANON_KEY: 'YOUR_SUPABASE_ANON_KEY',
+      
+      // Subscription details
+      SUB_PLAN_AMOUNT: 599,
+      SUB_OWNER_UPI: 'shopsteward.in@ybl',
+      SUB_OWNER_NAME: 'Samiran Das',
+      SUB_SUPPORT_WHATSAPP: '918637560557',
+      SUB_SUPPORT_EMAIL: 'shopsteward.in@gmail.com',
+      
+      // Defaults
+      DEFAULT_NEAR_EXPIRY_DAYS: 60,
+      DEFAULT_GST_RATE: 12
+    };
+
+    // Expose to window for app.js
+    window.APP_CONFIG = CONFIG;
+  </script>
+
+  <!-- App Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
