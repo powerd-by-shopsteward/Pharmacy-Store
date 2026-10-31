@@ -1846,3 +1846,11 @@ tbody tr:last-child td {
   border-bottom-color: #111827;
   font-weight: 600;
 }
+/* ── Subtle Card Hover Effects ── */
+.card, .kpi-card, .kpi-featured, .tile {
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+.card:hover, .kpi-card:hover, .kpi-featured:hover, .tile:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md) !important;
+}
