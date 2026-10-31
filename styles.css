@@ -1716,3 +1716,133 @@ tbody tr:last-child td {
     scroll-behavior: auto !important;
   }
 }
+/* ══════════════════════════════════════════════════════════════════
+   FLOWFIN OVERRIDES (Modern Sidebar & Topbar)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Sidebar */
+.sidebar {
+  background-color: #FFFFFF;
+  border-right: 1px solid #F0F0F5;
+  box-shadow: none;
+}
+
+.brand {
+  border-bottom: none;
+  padding: 24px 20px 16px;
+}
+
+.brand-logo {
+  background: transparent;
+  color: #5B5BD6;
+  font-size: 24px;
+}
+
+.brand-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.nav-group-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9CA3AF;
+  letter-spacing: 0.8px;
+  padding: 16px 20px 8px;
+}
+
+.nav-link {
+  padding: 10px 16px;
+  margin: 2px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4B5563;
+}
+
+.nav-link .icon {
+  font-size: 16px;
+  filter: grayscale(100%) opacity(0.6);
+}
+
+.nav-link:hover {
+  background-color: #F3F4F6;
+  color: #111827;
+}
+
+.nav-link.active {
+  background-color: #5B5BD6;
+  color: #FFFFFF;
+}
+
+.nav-link.active .icon {
+  filter: brightness(0) invert(1);
+}
+
+/* Sidebar Footer / Upgrade Card */
+.sidebar-footer {
+  border-top: none;
+  padding: 20px;
+}
+
+.upgrade-card {
+  background: #F8F8FF;
+  border: 1px solid #E0E0F5;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.upgrade-card h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.upgrade-card p {
+  font-size: 11px;
+  color: #6B7280;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.upgrade-btn {
+  background: #5B5BD6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px;
+  width: 100%;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Topbar Tabs */
+.topbar {
+  border-bottom: 1px solid #F0F0F5;
+  padding: 0 32px;
+}
+
+.topbar-tab {
+  padding: 20px 0;
+  margin-right: 32px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6B7280;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.topbar-tab:hover {
+  color: #111827;
+}
+
+.topbar-tab.active {
+  color: #111827;
+  border-bottom-color: #111827;
+  font-weight: 600;
+}
