@@ -1250,36 +1250,120 @@ function openBatchPicker(productId, currentBatchId, onPick) {
 
 console.log('[MediStore] Core Logic Block 4 loaded');
 /* ─────────────────────────────────────────────
-   25. LOGIN SCREEN
+   25. LOGIN SCREEN (Geometric Split)
    ───────────────────────────────────────────── */
 function renderLogin() {
   const app = $('#app');
   if(!app) return;
 
   app.innerHTML = `
-    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg-app);">
-      <form id="login-form" style="max-width:400px;width:100%;background:var(--bg-card);padding:32px;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-lg);">
-        <div style="text-align:center;margin-bottom:24px;">
-          <div style="width:56px;height:56px;background:var(--primary);color:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;box-shadow:0 4px 12px rgba(91, 91, 214, 0.3);">💊</div>
-          <h1 class="h1" style="margin-bottom:4px;">MediStore</h1>
-          <p class="text-muted text-sm">Sign in to manage your pharmacy</p>
-        </div>
+    <style>
+      .login-wrapper {
+        min-height: 100vh;
+        display: flex;
+        background-color: #F7F7FB;
+        overflow: hidden;
+      }
+      .login-left {
+        flex: 1.2;
+        background: linear-gradient(135deg, #5B5BD6 0%, #4F46E5 100%);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        clip-path: polygon(0 0, 100% 0, 80% 100%, 0% 100%);
+        z-index: 1;
+      }
+      .login-right {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 24px;
+        background-color: #F7F7FB;
+        position: relative;
+        z-index: 2;
+        margin-left: -5%; /* Pull it slightly over the geometric shape */
+      }
+      .login-form-container {
+        width: 100%;
+        max-width: 380px;
+      }
+      .mobile-brand {
+        display: none;
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      
+      /* Mobile & Tablet */
+      @media (max-width: 900px) {
+        .login-left { display: none; }
+        .login-right { 
+          margin-left: 0; 
+          flex: 1; 
+          background-color: #F7F7FB;
+        }
+        .mobile-brand { display: block; }
+      }
+    </style>
 
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <div>
-            <label class="label">Email Address</label>
-            <input class="input" type="email" id="l-email" required autocomplete="username" placeholder="owner@medistore.com">
+    <div class="login-wrapper">
+      
+      <!-- LEFT: Geometric Shape & Branding -->
+      <div class="login-left">
+        <div style="position:absolute; inset:0; background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 0%, transparent 40%); pointer-events:none;"></div>
+        
+        <div style="position:relative; z-index:10; padding: 0 60px; max-width: 520px;">
+          <div style="width:56px; height:56px; background:rgba(255,255,255,0.2); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:24px; backdrop-filter:blur(10px);">
+            💊
           </div>
-          <div>
-            <label class="label">Password</label>
-            <input class="input" type="password" id="l-pwd" required autocomplete="current-password" placeholder="••••••••">
-          </div>
-          <div id="l-err" class="field-error" style="display:none;text-align:center;"></div>
-          <button class="btn btn-primary btn-block btn-lg" type="submit" id="l-btn" style="margin-top:8px;">Sign In</button>
+          <h1 style="font-size:36px; font-weight:800; color:#fff; line-height:1.2; margin-bottom:16px; letter-spacing:-0.5px;">
+            Manage your pharmacy with precision.
+          </h1>
+          <p style="font-size:16px; color:rgba(255,255,255,0.8); line-height:1.6;">
+            The fastest way to handle billing, inventory, and prescriptions in one sleek, distraction-free dashboard.
+          </p>
         </div>
+      </div>
 
-        <p class="text-center text-xs text-muted" style="margin-top:24px;">Only the shop owner can sign in</p>
-      </form>
+      <!-- RIGHT: Clean Form -->
+      <div class="login-right">
+        <form id="login-form" class="login-form-container">
+          
+          <!-- Mobile Brand (Hidden on Desktop) -->
+          <div class="mobile-brand">
+            <div style="width:56px; height:56px; background:#5B5BD6; color:#fff; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 16px; box-shadow:0 8px 20px rgba(91,91,214,0.3);">
+              💊
+            </div>
+            <h1 style="font-size:24px; font-weight:800; color:#111827;">MediStore</h1>
+          </div>
+
+          <h2 style="font-size:26px; font-weight:800; color:#111827; margin-bottom:8px; letter-spacing:-0.5px;">Welcome back</h2>
+          <p style="color:#6B7280; font-size:14px; margin-bottom:32px;">Sign in to your account to continue.</p>
+
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <div>
+              <label class="label" style="color:#374151;">Email Address</label>
+              <input class="input" type="email" id="l-email" required autocomplete="username" placeholder="owner@medistore.com" style="background:#fff; border-color:#D1D5DB; height:44px;">
+            </div>
+            <div>
+              <label class="label" style="color:#374151;">Password</label>
+              <input class="input" type="password" id="l-pwd" required autocomplete="current-password" placeholder="••••••••" style="background:#fff; border-color:#D1D5DB; height:44px;">
+            </div>
+            
+            <div id="l-err" class="field-error" style="display:none; text-align:center; background:#FEF2F2; padding:10px; border-radius:8px; border:1px solid #FECACA; color:#DC2626;"></div>
+            
+            <button class="btn btn-primary btn-block btn-lg" type="submit" id="l-btn" style="margin-top:8px; font-size:15px; font-weight:700; height:48px; box-shadow:0 4px 14px rgba(91, 91, 214, 0.3);">
+              Sign In
+            </button>
+          </div>
+
+          <p style="text-align:center; font-size:12px; color:#9CA3AF; margin-top:32px;">
+            Only the shop owner can sign in
+          </p>
+        </form>
+      </div>
+
     </div>
   `;
 
@@ -1290,7 +1374,7 @@ function renderLogin() {
     
     errEl.style.display = 'none';
     btn.disabled = true;
-    btn.textContent = 'Signing in...';
+    btn.innerHTML = 'Signing in...';
 
     try {
       await login($('#l-email').value.trim(), $('#l-pwd').value);
