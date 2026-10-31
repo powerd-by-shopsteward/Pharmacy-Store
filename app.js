@@ -141,7 +141,12 @@ function applyFavicon() {
   link.href = (SETTINGS && SETTINGS.logo) ||
     "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>";
 }
-
+function logoHtml(size = 38) {
+  if(SETTINGS.logo) {
+    return `<img src="${esc(SETTINGS.logo)}" style="width:${size}px;height:${size}px;object-fit:contain;border-radius:6px;" alt="logo">`;
+  }
+  return '💊';
+}
 /* ─────────────────────────────────────────────
    7. DATE / TIME HELPERS
    ───────────────────────────────────────────── */
