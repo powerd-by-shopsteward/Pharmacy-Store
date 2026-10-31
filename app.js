@@ -1519,11 +1519,15 @@ function renderLayout() {
 
   const currentTheme = localStorage.getItem('theme') || 'light';
   const themeIcon = currentTheme === 'dark' ? '☀️' : '🌙';
+  
+  // Domain logic for the new card
+  const cleanName = (SETTINGS.shop_name || 'myshop').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const domainName = cleanName + '.com';
 
   app.innerHTML = `
     <div class="layout">
       <aside class="sidebar" id="sidebar">
-                      <div class="brand" style="padding: 24px 16px; border-bottom: none; gap: 12px; overflow: hidden; width: 100%;">
+        <div class="brand" style="padding: 24px 16px; border-bottom: none; gap: 12px; overflow: hidden; width: 100%;">
           <div class="brand-logo" style="width: 36px; height: 36px; background: #5B5BD6; color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; font-weight: 700; overflow: hidden;">
             ${logoHtml(24)}
           </div>
@@ -1535,11 +1539,16 @@ function renderLayout() {
         <div class="nav-scroll">${sidebarHTML}</div>
         
         <div class="sidebar-footer">
-          <div class="upgrade-card">
-            <h4>⚡ Upgrade to Pro</h4>
-            <p>Get advanced analytics, custom reports, and more.</p>
-            <button class="upgrade-btn" onclick="openSubscriptionModal()">Upgrade Now</button>
+          <!-- Issue 3: Replaced Upgrade Card with Domain Card -->
+          <div class="upgrade-card" style="padding: 16px;">
+            <h4 style="font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 4px;">🌐 Get your own domain</h4>
+            <p style="font-size: 12px; color: #6B7280; margin-bottom: 12px;">Make it official with a custom website address.</p>
+            <div style="background: #fff; border: 1px solid #E5E7EB; border-radius: 6px; padding: 8px 12px; font-family: monospace; font-size: 13px; font-weight: 600; color: #5B5BD6; text-align: center; margin-bottom: 12px; user-select: all;">
+              ${esc(domainName)}
+            </div>
+            <button class="upgrade-btn" onclick="toast('Contact support to link your domain!', 'info')" style="padding: 10px;">Claim Domain</button>
           </div>
+          
           <div style="display:flex; justify-content:space-between; align-items:center; padding:0 4px;">
             <button class="btn btn-ghost btn-sm" id="btn-theme" style="padding:0; height:auto;"><span>${themeIcon}</span></button>
             <button class="btn btn-ghost btn-sm" id="btn-logout" style="padding:0; height:auto; color:var(--text-muted); font-size:12px;">Sign Out</button>
@@ -1556,7 +1565,7 @@ function renderLayout() {
           <button class="hamburger" id="btn-theme-mobile">${themeIcon}</button>
         </div>
 
-                <header class="topbar" style="display:flex; justify-content:space-between; align-items:center; height:64px; padding-right: 24px;">
+        <header class="topbar" style="display:flex; justify-content:space-between; align-items:center; height:64px; padding-right: 24px;">
           <div style="display:flex; height:100%;">
             <a href="#/" class="topbar-tab ${hash === '#/' ? 'active' : ''}">Overview</a>
             <a href="#/invoices" class="topbar-tab ${hash.startsWith('#/invoices') ? 'active' : ''}">Invoices</a>
@@ -1572,8 +1581,8 @@ function renderLayout() {
               <span style="position:absolute; left:12px; top:9px; opacity:0.5; font-size:14px;">🔍</span>
             </div>
             
-            <!-- Profile Section -->
-            <div style="display:flex; align-items:center; gap:12px; border-left:1px solid #E5E7EB; padding-left:20px;">
+            <!-- Issue 1 & 2: Clickable Profile -->
+            <a href="#/myshop" style="display:flex; align-items:center; gap:12px; border-left:1px solid #E5E7EB; padding-left:20px; text-decoration:none; cursor:pointer;">
               <div class="topbar-avatar" style="width:32px; height:32px; font-size:12px; background:#F3F4F6; color:#111827; flex-shrink: 0;">
                 ${esc((SETTINGS.owner_name || 'O').charAt(0).toUpperCase())}
               </div>
@@ -1581,7 +1590,7 @@ function renderLayout() {
                 <div style="font-size:13px; font-weight:600; color:#111827; line-height:1.2;">${esc(SETTINGS.owner_name || 'Owner')}</div>
                 <div style="font-size:11px; color:#6B7280; line-height:1.2;">Admin</div>
               </div>
-            </div>
+            </a>
           </div>
         </header>
 
@@ -1613,6 +1622,31 @@ function renderLayout() {
   $('#btn-theme').onclick = toggleTheme;
   $('#btn-theme-mobile').onclick = toggleTheme;
   $('#btn-logout').onclick = () => { if(confirm('Sign out?')) logout(); };
+
+  // Issue 6: Global Search Implementation
+  const searchInput = $('#topbar-search-input');
+  if(searchInput) {
+    searchInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') {
+        const q = searchInput.value.trim().toLowerCase();
+        if(!q) return;
+        
+        // Try customer
+        const cust = DB.customers.find(c => (c.name || '').toLowerCase().includes(q) || (c.phone || '').includes(q));
+        if(cust) { location.hash = '#/customer/' + cust.id; searchInput.value = ''; return; }
+        
+        // Try product
+        const prod = DB.products.find(p => (p.name || '').toLowerCase().includes(q));
+        if(prod) { location.hash = '#/products'; searchInput.value = ''; return; }
+        
+        // Try invoice
+        const inv = DB.invoices.find(i => (i.invoice_no || '').toLowerCase().includes(q));
+        if(inv) { location.hash = '#/invoice/' + inv.id; searchInput.value = ''; return; }
+
+        toast('No match for "' + q + '"', 'info');
+      }
+    });
+  }
 }
 
 
@@ -1641,6 +1675,12 @@ function renderDashboard(content) {
 
   let selectedInv = recent.length > 0 ? recent[0] : null;
 
+  // Get near expiry batches for the replaced card
+  const nearBatches = nearExpiryBatches().slice(0, 5).map(b => {
+    const p = DB.products.find(x => x.id === b.product_id);
+    return { b, p };
+  }).filter(x => x.p);
+
   content.innerHTML = `
     <!-- PAGE HEAD -->
     <div class="page-head" style="align-items:center; margin-bottom:24px;">
@@ -1649,23 +1689,23 @@ function renderDashboard(content) {
         <p style="font-size:13px; color:#6B7280;">Monitor your invoices, payments and revenue all in one place.</p>
       </div>
       <div class="page-head-actions">
-        <button class="btn btn-ghost" style="background:#fff; border:1px solid #E5E7EB; font-size:12px; font-weight:600; color:#374151;">
+        <!-- Issue 2: Working Date Button -->
+        <a href="#/reports" class="btn btn-ghost" style="background:#fff; border:1px solid #E5E7EB; font-size:12px; font-weight:600; color:#374151; text-decoration:none;">
           📅 ${fmtDate(todayStr())}
-        </button>
+        </a>
       </div>
     </div>
 
     <!-- KPI ROW -->
     <div class="kpi-row" style="margin-bottom:20px;">
-      <!-- Featured KPI -->
+      <!-- Issue 5: Today's Sales Layout -->
       <div class="kpi-featured" style="position:relative; overflow:hidden; border-radius:16px; box-shadow:0 10px 25px -5px rgba(91,91,214,0.4);">
-        <div style="position:relative; z-index:2;">
-          <div class="kpi-icon" style="background:rgba(255,255,255,0.15); border-radius:8px;">💵</div>
-          <div class="kpi-label" style="opacity:0.9;">Today's Sales</div>
-          <div class="kpi-value" style="font-size:28px;">${rs(todaySales)}</div>
-          <div class="kpi-trend" style="margin-top:8px; font-size:11px; opacity:0.9;">
-            <span style="background:rgba(16,185,129,0.2); color:#34D399; padding:2px 6px; border-radius:4px; font-weight:700;">↓ 12.5%</span> <span style="margin-left:4px;">from last month</span>
+        <div style="position:relative; z-index:2; display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="kpi-icon" style="background:rgba(255,255,255,0.15); border-radius:8px; margin:0; width:32px; height:32px; font-size:16px;">💵</div>
+            <div class="kpi-label" style="opacity:0.9; margin:0;">Today's Sales</div>
           </div>
+          <div class="kpi-value" style="font-size:32px;">${rs(todaySales)}</div>
         </div>
         <!-- Decorative background chart -->
         <div style="position:absolute; bottom:0; left:0; right:0; height:70px; display:flex; align-items:flex-end; gap:6px; padding:0 20px; opacity:0.15; z-index:1;">
@@ -1792,7 +1832,7 @@ function renderDashboard(content) {
       </div>
     </div>
 
-    <!-- CHARTS -->
+    <!-- Issue 8: Replaced Chart with Near Expiry List -->
     <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px;">
       <div class="card" style="border-radius:16px; border:1px solid #F0F0F5; padding:24px;">
         <div class="card-title" style="font-size:15px; margin-bottom:20px;">
@@ -1800,11 +1840,28 @@ function renderDashboard(content) {
         </div>
         <div style="position:relative;height:260px;"><canvas id="dash-chart-revenue"></canvas></div>
       </div>
+      
       <div class="card" style="border-radius:16px; border:1px solid #F0F0F5; padding:24px;">
         <div class="card-title" style="font-size:15px; margin-bottom:20px;">
-          Payment Breakdown <small style="color:#9CA3AF; font-weight:400; font-size:12px;">Methods used by customers</small>
+          Near Expiry Products <small style="color:#9CA3AF; font-weight:400; font-size:12px;">Next ${SETTINGS.near_expiry_days} days</small>
         </div>
-        <div style="position:relative;height:260px;"><canvas id="dash-chart-donut"></canvas></div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          ${nearBatches.length === 0 
+            ? '<div class="empty-state" style="padding:40px 10px;"><div class="empty-icon">✅</div><div class="empty-title">All clear</div><div class="empty-desc">No products near expiry.</div></div>'
+            : nearBatches.map(({b, p}) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px dashed #E5E7EB;">
+                  <div>
+                    <div style="font-weight:600; font-size:13px; color:#111827;">${esc(p.name)}</div>
+                    <div class="text-xs text-muted" style="margin-top:2px;">Batch: ${esc(b.batch_no || '—')} · Qty: ${fmtNum(b.qty)}</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div class="exp-badge exp-near" style="margin-bottom:4px; display:inline-flex;">${fmtExpiryShort(b.expiry_date)}</div>
+                    <div class="text-xs text-muted">${esc(p.unit || '')}</div>
+                  </div>
+                </div>
+              `).join('')
+          }
+        </div>
       </div>
     </div>
   `;
@@ -1814,7 +1871,6 @@ function renderDashboard(content) {
     const container = $('#dash-detail-container');
     if(!container) return;
 
-    // If no invoice, render empty placeholders
     if(!inv) {
       container.innerHTML = `
         <div class="panel-detail" style="background:#E0E0F5; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#6B7280; font-size:13px;">
@@ -1830,7 +1886,6 @@ function renderDashboard(content) {
 
     const items = DB.invoice_items.filter(x => x.invoice_id === inv.id);
     
-    // Render up to 4 items, then "+ X more"
     const itemsHTML = items.slice(0, 4).map(it => `
       <tr>
         <td style="padding:10px 0; border-bottom:1px solid rgba(30,30,58,0.05);">${esc(it.product_name)}</td>
@@ -1843,7 +1898,6 @@ function renderDashboard(content) {
     const moreCount = items.length > 4 ? `<tr><td colspan="4" style="text-align:center;color:#6B7280;font-size:11px;padding-top:10px;">+ ${items.length - 4} more items</td></tr>` : '';
 
     container.innerHTML = `
-      <!-- CENTER: Lavender Panel -->
       <div class="panel-detail" style="background:#E0E0F5; border-radius:12px; padding:20px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
           <div>
@@ -1878,7 +1932,6 @@ function renderDashboard(content) {
         </div>
       </div>
 
-      <!-- RIGHT: Dark Actions Panel -->
       <div style="background:#232345; border-radius:12px; padding:20px; display:flex; flex-direction:column; gap:16px;">
         <div>
           <div style="font-size:11px; color:#9CA3AF; text-transform:uppercase; font-weight:700; margin-bottom:8px;">Payment Status</div>
@@ -1916,7 +1969,6 @@ function renderDashboard(content) {
 
   renderDashDetail(selectedInv);
 
-  // Attach click listeners
   $$('#dash-list .panel-list-item').forEach(el => {
     el.onclick = () => {
       $$('#dash-list .panel-list-item').forEach(x => x.classList.remove('active'));
@@ -1930,7 +1982,6 @@ function renderDashboard(content) {
   charts.forEach(c => { try { c.destroy(); } catch(e){} });
   charts = [];
 
-  // 1. Revenue Chart
   const revCtx = $('#dash-chart-revenue');
   if(revCtx) {
     const map = {};
@@ -1943,8 +1994,6 @@ function renderDashboard(content) {
     });
     
     const arr = Object.keys(map).sort().slice(-30).map(date => ({ date, sales: map[date] }));
-
-    // If empty, inject dummy data for visuals
     const labels = arr.length > 0 ? arr.map(d => d.date.slice(5)) : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const data   = arr.length > 0 ? arr.map(d => d.sales) : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
@@ -1964,34 +2013,6 @@ function renderDashboard(content) {
         scales: {
           y: { beginAtZero: true, grid: { color: '#F3F4F6' }, ticks: { font: {size: 10}, color: '#9CA3AF' } },
           x: { grid: { display: false }, ticks: { font: {size: 10}, color: '#9CA3AF' } }
-        }
-      }
-    }));
-  }
-
-  // 2. Donut Chart
-  const donutCtx = $('#dash-chart-donut');
-  if(donutCtx) {
-    const totalPaid = DB.invoices.reduce((s, i) => s + Number(i.paid || 0), 0);
-    const totalDue  = DB.invoices.reduce((s, i) => s + Number(i.due || 0), 0);
-    const isData = totalPaid > 0 || totalDue > 0;
-
-    charts.push(new Chart(donutCtx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Credit Card', 'Bank Transfer', 'Digital Wallet', 'Due'],
-        datasets: [{
-          data: isData ? [totalPaid * 0.5, totalPaid * 0.3, totalPaid * 0.2, totalDue] : [1, 1, 1, 0],
-          backgroundColor: ['#5B5BD6', '#8B5CF6', '#C4B5FD', '#EF4444'],
-          borderWidth: 0,
-          cutout: '75%'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'right', labels: { boxWidth: 8, usePointStyle: true, pointStyle: 'circle', font: {size: 11}, padding: 20 } }
         }
       }
     }));
@@ -10613,9 +10634,8 @@ window.renderSubSidebarPill = function() {
     pill = document.createElement('a');
     pill.id = 'sub-sidebar-pill';
     pill.href = '#/myshop';
-    pill.style.cssText = 'display:block;margin-top:8px;margin-bottom:6px;padding:10px 12px;border-radius:var(--radius-md);background:var(--bg-app);border:1px solid var(--border);text-decoration:none;cursor:pointer;transition:background 0.15s;';
+    pill.style.cssText = 'display:block;margin:16px 16px 6px;padding:12px 14px;border-radius:12px;background:#F8F8FF;border:1px solid #E0E0F5;text-decoration:none;cursor:pointer;transition:background 0.15s;';
     
-    // Insert before the footer
     const footer = sidebar.querySelector('.sidebar-footer');
     if(footer) sidebar.insertBefore(pill, footer);
     else sidebar.appendChild(pill);
@@ -10633,17 +10653,17 @@ window.renderSubSidebarPill = function() {
   const label = days > 0 ? days + 'd' : 'Expired';
 
   pill.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:13px;">⭐</span>
-        <span style="font-size:11px;font-weight:700;color:var(--text-main);">Pro Plan</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:14px;">⭐</span>
+        <span style="font-size:12px;font-weight:700;color:#111827;">Pro Plan</span>
       </div>
-      <span style="font-size:10px;font-weight:700;color:${color};">${label}</span>
+      <span style="font-size:10px;font-weight:700;color:${color};background:${color}22;padding:3px 8px;border-radius:6px;">${label}</span>
     </div>
-    <div style="height:5px;background:var(--border);border-radius:999px;overflow:hidden;">
+    <div style="height:6px;background:#E5E7EB;border-radius:999px;overflow:hidden;">
       <div style="height:100%;width:${pct}%;background:${color};border-radius:999px;"></div>
     </div>
-    <div style="font-size:9px;color:var(--text-muted);margin-top:5px;">${subStatusLabel()}</div>
+    <div style="font-size:10px;color:#6B7280;margin-top:6px;font-weight:500;">${subStatusLabel()}</div>
   `;
 };
 
@@ -11372,6 +11392,14 @@ async function route() {
 /* ─────────────────────────────────────────────
    88. EVENT LISTENERS & BOOT
    ───────────────────────────────────────────── */
+// Keyboard Shortcut for New Invoice (Ctrl+N or Cmd+N)
+window.addEventListener('keydown', (e) => {
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+    e.preventDefault();
+    location.hash = '#/new-invoice';
+  }
+});
+
 window.addEventListener('hashchange', () => { route(); });
 
 document.addEventListener('visibilitychange', () => {
