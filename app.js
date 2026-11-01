@@ -1539,8 +1539,8 @@ function renderLayout() {
         <div class="nav-scroll">${sidebarHTML}</div>
         
         <div class="sidebar-footer">
-          <!-- Issue 3: Replaced Upgrade Card with Domain Card -->
-          <div class="upgrade-card domain-premium-card" style="padding: 16px; background: linear-gradient(180deg, #F8F8FF 0%, #FFFFFF 100%);">
+                    <!-- Issue 3: Replaced Upgrade Card with Domain Card -->
+          <div class="upgrade-card domain-premium-card" style="padding: 16px;">
             <h4 style="font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 4px;">🌐 Get your own domain</h4>
             <p style="font-size: 12px; color: #6B7280; margin-bottom: 12px;">Make it official with a custom website address.</p>
             <div style="background: #fff; border: 1px solid #E5E7EB; border-radius: 6px; padding: 8px 12px; font-family: monospace; font-size: 13px; font-weight: 600; color: #5B5BD6; text-align: center; margin-bottom: 12px; user-select: all;">
@@ -10805,13 +10805,13 @@ window.renderSubSidebarPill = function() {
   const sidebar = document.querySelector('.sidebar');
   if(!sidebar) return;
 
-  let pill = document.getElementById('sub-sidebar-pill');
+   let pill = document.getElementById('sub-sidebar-pill');
   if(!pill) {
     pill = document.createElement('a');
     pill.id = 'sub-sidebar-pill';
     pill.href = '#/myshop';
-        pill.style.cssText = 'display:block;margin:16px 16px 6px;padding:12px 14px;border-radius:12px;background:#F8F8FF;border:1px solid #E0E0F5;text-decoration:none;cursor:pointer;transition:background 0.15s;';
-    pill.className = 'pro-plan-card';
+    pill.className = 'pro-plan-card'; // <--- THIS IS THE NEW CLASS
+    pill.style.cssText = 'display:block;margin:16px 16px 6px;padding:12px 14px;border-radius:12px;background:#F8F8FF;text-decoration:none;cursor:pointer;transition:background 0.15s;';
     
     const footer = sidebar.querySelector('.sidebar-footer');
     if(footer) sidebar.insertBefore(pill, footer);
