@@ -1854,3 +1854,77 @@ tbody tr:last-child td {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md) !important;
 }
+/* ─────────────────────────────────────────────
+   SMOOTH KPI HOVER SWAP
+   ───────────────────────────────────────────── */
+.dash-kpi-card {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease !important;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  background-color: var(--bg-card);
+}
+
+.dash-kpi-card:hover {
+  transform: translateY(-4px);
+}
+
+/* The smooth gradient fade-in trick */
+.dash-kpi-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #5B5BD6 0%, #4F46E5 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 0;
+}
+
+.kpi-active-state::before {
+  opacity: 1;
+}
+
+/* Active state shadows and borders */
+.kpi-active-state {
+  border-color: transparent !important;
+  box-shadow: 0 10px 25px -5px rgba(91,91,214,0.4) !important;
+}
+
+/* Smooth text and icon color transitions */
+.dash-kpi-card .kpi-label,
+.dash-kpi-card .kpi-value,
+.dash-kpi-card .kpi-trend span,
+.dash-kpi-card .kpi-icon {
+  transition: color 0.4s ease, background-color 0.4s ease;
+}
+
+/* White text when active */
+.kpi-active-state .kpi-label,
+.kpi-active-state .kpi-value,
+.kpi-active-state .kpi-trend span.text-muted {
+  color: #ffffff !important;
+}
+
+.kpi-active-state .kpi-trend span:first-child {
+  color: #34D399 !important; /* Keeps the trend arrow green */
+}
+
+/* Glassmorphism icon effect when active */
+.kpi-active-state .kpi-icon {
+  background: rgba(255,255,255,0.2) !important;
+  color: #ffffff !important;
+}
+
+/* Decorative chart fade */
+.kpi-decorative-chart {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
+  display: flex; align-items: flex-end; gap: 6px; padding: 0 20px;
+  opacity: 0; z-index: 0; transition: opacity 0.4s ease;
+}
+
+.kpi-active-state .kpi-decorative-chart {
+  opacity: 0.15 !important;
+}
