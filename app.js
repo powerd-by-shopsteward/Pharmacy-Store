@@ -270,57 +270,63 @@ async function fetchAllInvoiceItems() {
 async function syncDB() {
   window.DB_SYNCING = true;
 
-  const build = {
-    customers:              () => sb.from('customers').select('*').order('created_at', { ascending: false }),
-    doctors:                () => sb.from('doctors').select('*').order('name'),
-    suppliers:              () => sb.from('suppliers').select('*').order('name'),
-    products:               () => sb.from('products').select('*').order('name'),
-    product_batches:        () => sb.from('product_batches').select('*').order('expiry_date'),
-    invoices:               () => sb.from('invoices').select('*').order('invoice_date', { ascending: false }),
-    payments:               () => sb.from('payments').select('*').order('payment_date', { ascending: false }),
-    supplier_invoices:      () => sb.from('supplier_invoices').select('*').order('bill_date', { ascending: false }),
-    supplier_invoice_items: () => sb.from('supplier_invoice_items').select('*'),
-    supplier_payments:      () => sb.from('supplier_payments').select('*').order('payment_date', { ascending: false }),
-    returns:                () => sb.from('returns').select('*').order('return_date', { ascending: false }),
-    expenses:               () => sb.from('expenses').select('*').order('expense_date', { ascending: false })
-  };
+  // Helper to fetch ALL rows from any table, bypassing the 1000 limit
+  async function fetchAllRows(tableName, orderColumn, ascending = true) {
+    const PAGE_SIZE = 1000;
+    let allData = [];
+    let from = 0;
+    let hasMore = true;
 
-  async function fetchOne(name) {
-    const res = await build[name]();
-    if(res.error) throw new Error(name + ' - ' + res.error.message);
-    return res.data || [];
+    while (hasMore) {
+      let query = sb.from(tableName).select('*').range(from, from + PAGE_SIZE - 1);
+      if (orderColumn) query = query.order(orderColumn, { ascending });
+      
+      const { data, error } = await query;
+      if (error) throw new Error(tableName + ' - ' + error.message);
+      
+      if (data && data.length > 0) {
+        allData = allData.concat(data);
+        from += PAGE_SIZE;
+        if (data.length < PAGE_SIZE) hasMore = false;
+      } else {
+        hasMore = false;
+      }
+    }
+    return allData;
   }
 
-  const names  = Object.keys(build);
   const errors = [];
+  const tablesToFetch = [
+    { name: 'customers', order: 'created_at', asc: false },
+    { name: 'doctors', order: 'name', asc: true },
+    { name: 'suppliers', order: 'name', asc: true },
+    { name: 'products', order: 'name', asc: true },
+    { name: 'product_batches', order: 'expiry_date', asc: true },
+    { name: 'invoices', order: 'invoice_date', asc: false },
+    { name: 'payments', order: 'payment_date', asc: false },
+    { name: 'supplier_invoices', order: 'bill_date', asc: false },
+    { name: 'supplier_invoice_items', order: null, asc: true },
+    { name: 'supplier_payments', order: 'payment_date', asc: false },
+    { name: 'returns', order: 'return_date', asc: false },
+    { name: 'expenses', order: 'expense_date', asc: false }
+  ];
 
-  /* Pass 1: Parallel fetch */
-  let results = await Promise.allSettled(names.map(fetchOne));
-  let failed  = names.filter((_, i) => results[i].status === 'rejected');
+  // Fetch all tables in parallel
+  const results = await Promise.allSettled(
+    tablesToFetch.map(t => fetchAllRows(t.name, t.order, t.asc))
+  );
 
-  /* Pass 2: Retry failures once (600ms backoff) */
-  if(failed.length) {
-    console.warn('[syncDB] retrying:', failed);
-    await new Promise(r => setTimeout(r, 600));
-    const retries = await Promise.allSettled(failed.map(fetchOne));
-    retries.forEach((r, i) => {
-      const idx = names.indexOf(failed[i]);
-      results[idx] = r;
-    });
-    failed = names.filter((_, i) => results[i].status === 'rejected');
-  }
-
-  /* Apply results */
-  results.forEach((r, i) => {
-    const name = names[i];
-    if(r.status === 'fulfilled') {
-      DB[name] = r.value;
+  // Assign results to DB
+  results.forEach((res, i) => {
+    const tableName = tablesToFetch[i].name;
+    if (res.status === 'fulfilled') {
+      DB[tableName] = res.value;
     } else {
-      errors.push(r.reason.message || String(r.reason));
+      errors.push(res.reason.message || String(res.reason));
     }
   });
 
-  /* Paginated Invoice Items */
+  // Paginated Invoice Items (Keep your existing function)
   try {
     DB.invoice_items = await fetchAllInvoiceItems();
   } catch(e) {
@@ -367,7 +373,7 @@ async function syncDB() {
   window.DB_SYNC_ERRORS = errors;
   window.DB_SYNCING     = false;
 
-    if(errors.length) {
+  if(errors.length) {
     console.error('🚨 SYNC ERROR:', errors);
     if(!window.__hasShownSyncError) {
       toast('Data sync failed: ' + (errors[0] || 'Unknown error'), 'error');
