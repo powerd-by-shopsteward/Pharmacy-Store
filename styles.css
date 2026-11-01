@@ -1928,3 +1928,66 @@ tbody tr:last-child td {
 .kpi-active-state .kpi-decorative-chart {
   opacity: 0.15 !important;
 }
+/* ─────────────────────────────────────────────
+   PREMIUM SIDEBAR ANIMATIONS
+   ───────────────────────────────────────────── */
+
+/* 1. The Pro Plan Breathing Glow */
+@keyframes proGlow {
+  0% { box-shadow: 0 0 0 0 rgba(91, 91, 214, 0.1); border-color: #E0E0F5; }
+  50% { box-shadow: 0 0 12px 2px rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(91, 91, 214, 0.1); border-color: #E0E0F5; }
+}
+.pro-plan-card {
+  position: relative;
+  overflow: hidden;
+  animation: proGlow 4s infinite ease-in-out;
+  transition: transform 0.2s ease;
+}
+.pro-plan-card:hover {
+  transform: translateY(-2px);
+}
+
+/* 2. The Domain Card Shimmer Sweep */
+@keyframes premiumShine {
+  0% { transform: translateX(-150%) skewX(-20deg); }
+  20%, 100% { transform: translateX(200%) skewX(-20deg); }
+}
+@keyframes domainGlow {
+  0% { box-shadow: 0 2px 10px rgba(91, 91, 214, 0.05); }
+  50% { box-shadow: 0 4px 20px rgba(91, 91, 214, 0.25); }
+  100% { box-shadow: 0 2px 10px rgba(91, 91, 214, 0.05); }
+}
+
+.domain-premium-card {
+  position: relative;
+  overflow: hidden;
+  animation: domainGlow 3s infinite ease-in-out;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.domain-premium-card:hover {
+  transform: translateY(-3px) scale(1.02);
+}
+
+/* The sweeping light effect */
+.domain-premium-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 60%; height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0) 100%);
+  animation: premiumShine 5s infinite;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Make the Claim button pop a bit more */
+.domain-premium-card .upgrade-btn {
+  background: linear-gradient(135deg, #5B5BD6 0%, #4F46E5 100%);
+  box-shadow: 0 4px 10px rgba(91, 91, 214, 0.3);
+  transition: all 0.2s ease;
+}
+.domain-premium-card .upgrade-btn:hover {
+  box-shadow: 0 6px 15px rgba(91, 91, 214, 0.5);
+  transform: scale(1.02);
+}
