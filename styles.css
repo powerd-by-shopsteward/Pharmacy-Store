@@ -1991,3 +1991,34 @@ tbody tr:last-child td {
   box-shadow: 0 6px 15px rgba(91, 91, 214, 0.5);
   transform: scale(1.02);
 }
+/* FORCED HIGH-VISIBILITY ANIMATIONS */
+@keyframes superPulse {
+  0% { border-color: #5B5BD6; box-shadow: 0 0 5px rgba(91, 91, 214, 0.2); }
+  50% { border-color: #8B5CF6; box-shadow: 0 0 20px rgba(139, 92, 246, 0.6); }
+  100% { border-color: #5B5BD6; box-shadow: 0 0 5px rgba(91, 91, 214, 0.2); }
+}
+
+@keyframes movingGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.pro-plan-card {
+  animation: superPulse 2s infinite ease-in-out !important;
+  border: 2px solid #5B5BD6 !important;
+}
+
+.domain-premium-card {
+  background: linear-gradient(270deg, #F8F8FF, #EEEEFB, #F8F8FF, #EEEEFB) !important;
+  background-size: 300% 300% !important;
+  animation: movingGradient 4s ease infinite !important;
+  border: 2px solid #E0E0F5 !important;
+  box-shadow: 0 10px 20px -5px rgba(91, 91, 214, 0.2) !important;
+  transition: transform 0.3s ease !important;
+}
+
+.domain-premium-card:hover {
+  border-color: #5B5BD6 !important;
+  transform: translateY(-3px) !important;
+}
