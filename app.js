@@ -272,7 +272,7 @@ async function syncDB() {
 
   // Helper to fetch ALL rows from any table, bypassing the 1000 limit
   async function fetchAllRows(tableName, orderColumn, ascending = true) {
-    const PAGE_SIZE = 2;
+    const PAGE_SIZE = 1000;
     let allData = [];
     let from = 0;
     let hasMore = true;
