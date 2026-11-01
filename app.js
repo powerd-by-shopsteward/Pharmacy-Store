@@ -2135,6 +2135,25 @@ function renderDashboard(content) {
     });
   }, 100);
 
+     // ── KPI HOVER SWAP LOGIC ──
+  setTimeout(() => {
+    const kpiRow = document.getElementById('dash-kpi-row');
+    if (!kpiRow) return;
+    const kpiCards = kpiRow.querySelectorAll('.dash-kpi-card');
+
+    kpiCards.forEach(card => {
+      card.onmouseenter = () => {
+        kpiCards.forEach(c => c.classList.remove('kpi-active-state'));
+        card.classList.add('kpi-active-state');
+      };
+    });
+
+    kpiRow.onmouseleave = () => {
+      kpiCards.forEach(c => c.classList.remove('kpi-active-state'));
+      if (kpiCards.length > 0) kpiCards[0].classList.add('kpi-active-state');
+    };
+  }, 50);
+
   // ── RENDER CHARTS ──
   charts.forEach(c => { try { c.destroy(); } catch(e){} });
   charts = [];
