@@ -1696,19 +1696,50 @@ function renderDashboard(content) {
       </div>
     </div>
 
-    <!-- KPI ROW -->
-    <div class="kpi-row" style="margin-bottom:20px;">
-      <!-- Issue 5: Today's Sales Layout -->
-      <div class="kpi-featured" style="position:relative; overflow:hidden; border-radius:16px; box-shadow:0 10px 25px -5px rgba(91,91,214,0.4);">
-        <div style="position:relative; z-index:2; display:flex; flex-direction:column; gap:12px;">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div class="kpi-icon" style="background:rgba(255,255,255,0.15); border-radius:8px; margin:0; width:32px; height:32px; font-size:16px;">💵</div>
-            <div class="kpi-label" style="opacity:0.9; margin:0;">Today's Sales</div>
-          </div>
-          <div class="kpi-value" style="font-size:32px;">${rs(todaySales)}</div>
-        </div>
-        <!-- Decorative background chart -->
-        <div style="position:absolute; bottom:0; left:0; right:0; height:70px; display:flex; align-items:flex-end; gap:6px; padding:0 20px; opacity:0.15; z-index:1;">
+        <!-- KPI ROW -->
+    <style>
+      .dash-kpi-card {
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+      .dash-kpi-card:hover {
+        transform: translateY(-4px);
+      }
+      .kpi-active-state {
+        background: linear-gradient(135deg, #5B5BD6 0%, #4F46E5 100%) !important;
+        border-color: transparent !important;
+        box-shadow: 0 10px 25px -5px rgba(91,91,214,0.4) !important;
+      }
+      .kpi-active-state .kpi-label,
+      .kpi-active-state .kpi-value {
+        color: #ffffff !important;
+      }
+      .kpi-active-state .kpi-trend span:first-child {
+        color: #34D399 !important; /* Keeps the trend arrow green */
+      }
+      .kpi-active-state .kpi-trend span.text-muted {
+        color: rgba(255,255,255,0.8) !important; /* Turns gray text white */
+      }
+      .kpi-active-state .kpi-icon {
+        background: rgba(255,255,255,0.2) !important;
+        color: #ffffff !important;
+      }
+      .kpi-decorative-chart {
+        position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
+        display: flex; align-items: flex-end; gap: 6px; padding: 0 20px;
+        opacity: 0; z-index: 0; transition: opacity 0.3s ease;
+      }
+      .kpi-active-state .kpi-decorative-chart {
+        opacity: 0.15 !important;
+      }
+    </style>
+
+    <div class="kpi-row" style="margin-bottom:20px;" id="dash-kpi-row">
+      <!-- KPI 1 -->
+      <div class="kpi-card dash-kpi-card kpi-active-state" style="border-radius:16px; border:1px solid #F0F0F5;">
+        <div class="kpi-decorative-chart">
            <div style="flex:1; background:#fff; height:30%; border-radius:2px 2px 0 0;"></div>
            <div style="flex:1; background:#fff; height:50%; border-radius:2px 2px 0 0;"></div>
            <div style="flex:1; background:#fff; height:40%; border-radius:2px 2px 0 0;"></div>
@@ -1717,46 +1748,83 @@ function renderDashboard(content) {
            <div style="flex:1; background:#fff; height:90%; border-radius:2px 2px 0 0;"></div>
            <div style="flex:1; background:#fff; height:60%; border-radius:2px 2px 0 0;"></div>
         </div>
+        <div class="kpi-card-top" style="position:relative; z-index:2;">
+          <div class="kpi-label">Today's Sales</div>
+          <div class="kpi-icon">💵</div>
+        </div>
+        <div style="position:relative; z-index:2;">
+          <div class="kpi-value">${rs(todaySales)}</div>
+          <div class="kpi-trend" style="margin-top:8px;">
+            <span style="color:#10B981; font-weight:700;">↑ 8.2%</span> <span class="text-muted" style="font-size:11px; margin-left:4px;">from last month</span>
+          </div>
+        </div>
       </div>
 
-      <!-- Standard KPI 1 -->
-      <div class="kpi-card" style="border-radius:16px; border:1px solid #F0F0F5; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-        <div class="kpi-card-top">
-          <div class="kpi-label" style="color:#6B7280;">Outstanding Due</div>
+      <!-- KPI 2 -->
+      <div class="kpi-card dash-kpi-card" style="border-radius:16px; border:1px solid #F0F0F5; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+        <div class="kpi-decorative-chart">
+           <div style="flex:1; background:#fff; height:30%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:50%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:40%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:70%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:50%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:90%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:60%; border-radius:2px 2px 0 0;"></div>
+        </div>
+        <div class="kpi-card-top" style="position:relative; z-index:2;">
+          <div class="kpi-label">Outstanding Due</div>
           <div class="kpi-icon" style="color:#F59E0B; background:#FEF3C7;">💳</div>
         </div>
-        <div>
-          <div class="kpi-value" style="font-size:28px;">${rs(custDue)}</div>
+        <div style="position:relative; z-index:2;">
+          <div class="kpi-value">${rs(custDue)}</div>
           <div class="kpi-trend" style="margin-top:8px;">
-            <span style="color:#10B981; font-weight:700;">↑ 8.2%</span> <span style="color:#6B7280; font-size:11px; margin-left:4px;">from last month</span>
+            <span style="color:#10B981; font-weight:700;">↑ 8.2%</span> <span class="text-muted" style="font-size:11px; margin-left:4px;">from last month</span>
           </div>
         </div>
       </div>
 
-      <!-- Standard KPI 2 -->
-      <div class="kpi-card" style="border-radius:16px; border:1px solid #F0F0F5; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-        <div class="kpi-card-top">
-          <div class="kpi-label" style="color:#6B7280;">Low Stock</div>
+      <!-- KPI 3 -->
+      <div class="kpi-card dash-kpi-card" style="border-radius:16px; border:1px solid #F0F0F5; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+        <div class="kpi-decorative-chart">
+           <div style="flex:1; background:#fff; height:30%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:50%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:40%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:70%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:50%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:90%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:60%; border-radius:2px 2px 0 0;"></div>
+        </div>
+        <div class="kpi-card-top" style="position:relative; z-index:2;">
+          <div class="kpi-label">Low Stock</div>
           <div class="kpi-icon" style="color:#10B981; background:#D1FAE5;">📦</div>
         </div>
-        <div>
-          <div class="kpi-value" style="font-size:28px;">${lowStockCount}</div>
+        <div style="position:relative; z-index:2;">
+          <div class="kpi-value">${lowStockCount}</div>
           <div class="kpi-trend" style="margin-top:8px;">
-            <span style="color:#10B981; font-weight:700;">↓ 3 days</span> <span style="color:#6B7280; font-size:11px; margin-left:4px;">from last month</span>
+            <span style="color:#10B981; font-weight:700;">↓ 3 days</span> <span class="text-muted" style="font-size:11px; margin-left:4px;">from last month</span>
           </div>
         </div>
       </div>
 
-      <!-- Standard KPI 3 -->
-      <div class="kpi-card" style="border-radius:16px; border:1px solid #F0F0F5; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-        <div class="kpi-card-top">
-          <div class="kpi-label" style="color:#6B7280;">Near Expiry</div>
+      <!-- KPI 4 -->
+      <div class="kpi-card dash-kpi-card" style="border-radius:16px; border:1px solid #F0F0F5; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+        <div class="kpi-decorative-chart">
+           <div style="flex:1; background:#fff; height:30%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:50%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:40%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:70%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:50%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:90%; border-radius:2px 2px 0 0;"></div>
+           <div style="flex:1; background:#fff; height:60%; border-radius:2px 2px 0 0;"></div>
+        </div>
+        <div class="kpi-card-top" style="position:relative; z-index:2;">
+          <div class="kpi-label">Near Expiry</div>
           <div class="kpi-icon" style="color:#5B5BD6; background:#EEEEFB;">⏳</div>
         </div>
-        <div>
-          <div class="kpi-value" style="font-size:28px;">${nearExpCount}</div>
+        <div style="position:relative; z-index:2;">
+          <div class="kpi-value">${nearExpCount}</div>
           <div class="kpi-trend" style="margin-top:8px;">
-            <span style="color:#10B981; font-weight:700;">↑ 15.4%</span> <span style="color:#6B7280; font-size:11px; margin-left:4px;">from last month</span>
+            <span style="color:#10B981; font-weight:700;">↑ 15.4%</span> <span class="text-muted" style="font-size:11px; margin-left:4px;">from last month</span>
           </div>
         </div>
       </div>
@@ -2045,6 +2113,27 @@ function renderDashboard(content) {
 
   // Run once on load
   updateDashList();
+
+     // ── KPI HOVER SWAP LOGIC ──
+  setTimeout(() => {
+    const kpiRow = document.getElementById('dash-kpi-row');
+    if (!kpiRow) return;
+    const kpiCards = kpiRow.querySelectorAll('.dash-kpi-card');
+
+    // When mouse enters a card, strip purple from all, add to hovered
+    kpiCards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        kpiCards.forEach(c => c.classList.remove('kpi-active-state'));
+        card.classList.add('kpi-active-state');
+      });
+    });
+
+    // When mouse leaves the whole row, reset back to the first card
+    kpiRow.addEventListener('mouseleave', () => {
+      kpiCards.forEach(c => c.classList.remove('kpi-active-state'));
+      if (kpiCards.length > 0) kpiCards[0].classList.add('kpi-active-state');
+    });
+  }, 100);
 
   // ── RENDER CHARTS ──
   charts.forEach(c => { try { c.destroy(); } catch(e){} });
