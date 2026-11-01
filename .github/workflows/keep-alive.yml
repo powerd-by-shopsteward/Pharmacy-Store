@@ -1,6 +1,5 @@
 on:
   schedule:
-    # Runs daily at 12:00 UTC
     - cron: '0 12 * * *'
   workflow_dispatch:
 
@@ -14,3 +13,5 @@ jobs:
             -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/keepalive?select=id&limit=1" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+            
+          echo "✅ Success! Supabase is awake."
